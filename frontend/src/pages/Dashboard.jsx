@@ -1,8 +1,37 @@
-import React from "react";
-import { ListTodo, Star, CheckCircle, Plus } from "lucide-react";
-
+import React, { useEffect, useState } from "react";
+import { ListTodo, Star, CheckCircle, Plus, LogOut } from "lucide-react";
+import API from "../api";
 
 const Dashboard = () => {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
+
+  // 🔁 Fetch tasks on load
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const res = await API.get('/api/tasks');
+      setTasks(res.data);
+    } catch (err) {
+      console.error("Error fetching tasks", err);
+    }
+  };
+
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+    if (!newTask.trim()) return;
+    try {
+      const res = await API.post('/api/tasks', { title: newTask });
+      setTasks([res.data, ...tasks]);
+      setNewTask("");
+    } catch (err) {
+      console.error("Error adding task", err);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -21,17 +50,31 @@ const Dashboard = () => {
           <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
             <Plus size={20} /> New List
           </li>
-        </ul>
+          <li
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/';
+            }}
+            className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-700 mt-4"
+          >
+            <LogOut size={20} /> Logout
+          </li>
 
+
+        </ul>
       </aside>
 
-      {/* Main content */}
+      {/* Main Content */}
       <main className="flex-1 bg-white p-6">
         <h1 className="text-2xl font-bold mb-4">Today’s Tasks</h1>
-        <form className="mb-6 flex gap-4">
+
+        {/* Add Task Form */}
+        <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
           <input
             type="text"
             placeholder="Add a new task..."
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
@@ -42,19 +85,18 @@ const Dashboard = () => {
           </button>
         </form>
 
+        {/* Tasks List */}
         <div className="space-y-4">
-          {["Finish homework", "Buy groceries", "Workout"].map((task, idx) => (
+          {tasks.map((task) => (
             <div
-              key={idx}
+              key={task._id}
               className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
             >
-              <span>{task}</span>
-              <button className="text-sm text-red-500 hover:underline">Delete</button>
+              <span>{task.title}</span>
+              {/* We’ll add delete/edit later */}
             </div>
           ))}
         </div>
-
-
       </main>
     </div>
   );
