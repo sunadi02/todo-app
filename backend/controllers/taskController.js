@@ -42,6 +42,22 @@ exports.updateTask = async (req, res) => {
   }
 };
 
+// Toggle important
+exports.toggleImportant = async (req, res) => {
+  try {
+    const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    task.isImportant = !task.isImportant;
+    await task.save();
+
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+
 // Delete a task
 exports.deleteTask = async (req, res) => {
   try {

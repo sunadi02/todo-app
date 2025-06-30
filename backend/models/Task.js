@@ -17,7 +17,12 @@ const taskSchema = new mongoose.Schema({
   },
   dueDate: {
     type: Date
+  },
+  isImportant: {
+  type: Boolean,
+  default: false,
   }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Task', taskSchema);
