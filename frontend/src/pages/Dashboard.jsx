@@ -5,7 +5,6 @@ import {
   Check,
   Plus,
   LogOut,
-  Pencil,
   Trash2,
 } from "lucide-react";
 import API from "../api";
@@ -14,7 +13,7 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editText, setEditText] = useState("");
+  // const [editText, setEditText] = useState("");
   const [editedTitle, setEditedTitle] = useState("");
   const [filter, setFilter] = useState("all");
 
@@ -171,10 +170,19 @@ useEffect(() => {
               {editingTaskId === task._id ? (
                 <input
                   type="text"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="border px-2 py-1 rounded-md w-full mr-2"
-                />
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onBlur={() => handleUpdateTask(task._id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleUpdateTask(task._id);
+                    }
+                  }}
+              autoFocus
+              className="border px-2 py-1 rounded-md w-full"
+            />
+
+
               ) : (
                 <div className="flex items-center gap-2">
                   <Star
@@ -228,7 +236,7 @@ useEffect(() => {
               )}
 
               <div className="flex gap-3 items-center ml-4">
-                {editingTaskId === task._id ? (
+                {/* {editingTaskId === task._id ? (
                   <button
                     onClick={() => handleUpdateTask(task._id)}
                     className="text-blue-600 hover:underline text-sm"
@@ -245,8 +253,7 @@ useEffect(() => {
                   >
                     <Pencil size={18} />
                   </button>
-                )}
-                
+                )} */}
 
                 <button
                   onClick={() => handleDeleteTask(task._id)}
