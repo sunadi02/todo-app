@@ -16,6 +16,8 @@ const Dashboard = () => {
   // const [editText, setEditText] = useState("");
   const [editedTitle, setEditedTitle] = useState("");
   const [filter, setFilter] = useState("all");
+  const [selectedTask, setSelectedTask] = useState(null);
+
 
   const fetchTasks = useCallback(async () => {
   try {
@@ -100,6 +102,11 @@ useEffect(() => {
     console.error("Error toggling complete", err);
   }
   };
+
+  const handleSelectTask = (task) => {
+  setSelectedTask(task);
+  };
+
 
   return (
     <div className="flex min-h-screen">
@@ -220,10 +227,7 @@ useEffect(() => {
     />
   ) : (
     <span
-      onClick={() => {
-        setEditingTaskId(task._id);
-        setEditedTitle(task.title);
-      }}
+      onClick={() => handleSelectTask(task)}
       className={`cursor-pointer ${task.completed ? 'line-through text-gray-400' : ''}`}
     >
       {task.title}
@@ -266,6 +270,35 @@ useEffect(() => {
           ))}
         </div>
       </main>
+
+      {selectedTask && (
+  <div className="w-96 bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-lg font-bold">Task Details</h2>
+      <button
+        onClick={() => setSelectedTask(null)}
+        className="text-gray-500 hover:text-red-500"
+      >
+        ✖
+      </button>
+    </div>
+
+    <div className="space-y-4">
+      <div>
+        <label className="block font-medium text-sm mb-1">Title</label>
+        <input
+          type="text"
+          value={selectedTask.title}
+          readOnly
+          className="w-full border rounded px-2 py-1"
+        />
+      </div>
+
+      {/* Next features: status, star, desc, etc. */}
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
