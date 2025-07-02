@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   ListTodo,
   Star,
-  CheckCircle,
+  Check,
   Plus,
   LogOut,
   Pencil,
@@ -15,19 +15,31 @@ const Dashboard = () => {
   const [newTask, setNewTask] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [editedTitle, setEditedTitle] = useState("");
+  const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const fetchTasks = useCallback(async () => {
+  try {
+    const res = await API.get('/api/tasks');
+    let all = res.data;
 
-  const fetchTasks = async () => {
-    try {
-      const res = await API.get("/api/tasks");
-      setTasks(res.data);
-    } catch (err) {
-      console.error("Error fetching tasks", err);
+    if (filter === "important") {
+      all = all.filter((task) => task.isImportant);
+    } else if (filter === "completed") {
+      all = all.filter((task) => task.completed);
     }
-  };
+
+    setTasks(all);
+  } catch (err) {
+    console.error("Error fetching tasks", err);
+  }
+}, [filter]);
+
+useEffect(() => {
+  fetchTasks();
+}, [fetchTasks]);
+
+
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -65,18 +77,29 @@ const Dashboard = () => {
   };
 
   const handleUpdateTask = async (id) => {
-    try {
-      const res = await API.put(`/api/tasks/${id}`, { title: editText });
-      setTasks(
-        tasks.map((task) =>
-          task._id === id ? { ...task, title: res.data.title } : task
-        )
-      );
-      setEditingTaskId(null);
-      setEditText("");
-    } catch (err) {
-      console.error("Error updating task", err);
-    }
+  try {
+    const res = await API.put(`/api/tasks/${id}`, { title: editedTitle });
+    const updated = res.data;
+    setTasks((prev) =>
+      prev.map((task) => (task._id === id ? updated : task))
+    );
+    setEditingTaskId(null);
+    setEditedTitle("");
+  } catch (err) {
+    console.error("Error updating task", err);
+  }
+  };
+
+  const handleToggleComplete = async (id, completed) => {
+  try {
+    const res = await API.put(`/api/tasks/${id}`, { completed: !completed });
+    const updated = res.data;
+    setTasks((prev) =>
+      prev.map((task) => (task._id === id ? updated : task))
+    );
+  } catch (err) {
+    console.error("Error toggling complete", err);
+  }
   };
 
   return (
@@ -86,18 +109,18 @@ const Dashboard = () => {
         <div>
           <h2 className="text-xl font-bold mb-4">My Lists</h2>
           <ul className="space-y-4 text-gray-700">
-            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
+            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600"  onClick={() => setFilter("all")}>
               <ListTodo size={20} /> All Tasks
             </li>
             <li
               className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
-              onClick={() => setTasks(tasks.filter(task => task.isImportant))}
+              onClick={() => setFilter("important")}
               >
               <Star size={20} /> Important
             </li>
 
-            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
-              <CheckCircle size={20} /> Completed
+            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600" onClick={() => setFilter("completed")}>
+              <Check size={20} /> Completed
             </li>
             <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
               <Plus size={20} /> New List
@@ -161,7 +184,45 @@ const Dashboard = () => {
                     }`}
                     onClick={() => handleToggleImportant(task._id)}
                   />
-                  <span>{task.title}</span>
+                  <div className="flex items-center gap-2 flex-1">
+  {/* Completion toggle circle */}
+  <div
+    onClick={() => handleToggleComplete(task._id, task.completed)}
+    className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${
+      task.completed ? 'bg-green-500 border-green-500' : 'border-gray-400'
+    }`}
+  >
+    {task.completed && <Check size={14} className="text-white" />}
+  </div>
+
+  {/* Inline edit or normal title */}
+  {editingTaskId === task._id ? (
+    <input
+      type="text"
+      className="border border-gray-300 rounded px-2 py-1 w-full"
+      value={editedTitle}
+      autoFocus
+      onChange={(e) => setEditedTitle(e.target.value)}
+      onBlur={() => handleUpdateTask(task._id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          handleUpdateTask(task._id);
+        }
+      }}
+    />
+  ) : (
+    <span
+      onClick={() => {
+        setEditingTaskId(task._id);
+        setEditedTitle(task.title);
+      }}
+      className={`cursor-pointer ${task.completed ? 'line-through text-gray-400' : ''}`}
+    >
+      {task.title}
+    </span>
+  )}
+</div>
+
                 </div>
 
               )}
@@ -185,6 +246,7 @@ const Dashboard = () => {
                     <Pencil size={18} />
                   </button>
                 )}
+                
 
                 <button
                   onClick={() => handleDeleteTask(task._id)}
