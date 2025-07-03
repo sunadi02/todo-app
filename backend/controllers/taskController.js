@@ -27,12 +27,12 @@ exports.createTask = async (req, res) => {
 
 // Update a task
 exports.updateTask = async (req, res) => {
-  const { title, completed, dueDate } = req.body;
+  const { title, completed, description, isImportant, priority, dueDate } = req.body;
 
   try {
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      { title, completed, dueDate },
+      { title, completed, description, isImportant, priority, dueDate },
       { new: true }
     );
     if (!task) return res.status(404).json({ message: 'Task not found' });
@@ -41,6 +41,7 @@ exports.updateTask = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 
 // Toggle important
 exports.toggleImportant = async (req, res) => {

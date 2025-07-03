@@ -21,7 +21,11 @@ const taskSchema = new mongoose.Schema({
   isImportant: {
   type: Boolean,
   default: false,
-  }
+  },
+  description: String,
+  dueDate: Date,
+  priority: { type: String, enum: ["Low", "Medium", "High"], default: "Low" },
+  steps: [{ text: String, done: Boolean }],
 
 }, { timestamps: true });
 

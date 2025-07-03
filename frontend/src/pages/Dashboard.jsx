@@ -12,7 +12,7 @@ import API from "../api";
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskId] = useState(null);
   // const [editText, setEditText] = useState("");
   const [editedTitle, setEditedTitle] = useState("");
   const [filter, setFilter] = useState("all");
@@ -30,7 +30,15 @@ const Dashboard = () => {
       all = all.filter((task) => task.completed);
     }
 
-    setTasks(all);
+    if (filter === "all") {
+  all.sort((a, b) => {
+    const order = { High: 1, Medium: 2, Low: 3 };
+    return order[a.priority] - order[b.priority];
+  });
+
+  }
+  setTasks(all);
+
   } catch (err) {
     console.error("Error fetching tasks", err);
   }
@@ -77,19 +85,21 @@ useEffect(() => {
     }
   };
 
-  const handleUpdateTask = async (id) => {
+  const handleUpdateTask = async (id, updates) => {
   try {
-    const res = await API.put(`/api/tasks/${id}`, { title: editedTitle });
+    const res = await API.put(`/api/tasks/${id}`, updates);
     const updated = res.data;
     setTasks((prev) =>
       prev.map((task) => (task._id === id ? updated : task))
     );
-    setEditingTaskId(null);
-    setEditedTitle("");
+    if (selectedTask && selectedTask._id === id) {
+      setSelectedTask(updated);
+    }
   } catch (err) {
     console.error("Error updating task", err);
   }
-  };
+};
+
 
   const handleToggleComplete = async (id, completed) => {
   try {
@@ -106,6 +116,23 @@ useEffect(() => {
   const handleSelectTask = (task) => {
   setSelectedTask(task);
   };
+
+  const updateTaskField = async (field, value) => {
+  try {
+    const updatedTask = {
+      ...selectedTask,
+      [field]: value
+    };
+
+    const res = await API.put(`/api/tasks/${selectedTask._id}`, updatedTask);
+    setSelectedTask(res.data);
+    setTasks((prev) =>
+      prev.map((t) => (t._id === selectedTask._id ? res.data : t))
+    );
+  } catch (err) {
+    console.error("Error updating field", err);
+  }
+};
 
 
   return (
@@ -272,7 +299,36 @@ useEffect(() => {
       </main>
 
       {selectedTask && (
-  <div className="w-96 bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50">
+  <div
+  className="bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50"
+  style={{ width: selectedTask.panelWidth || 400 }}
+>
+  {/* Resizer line */}
+  <div
+    className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50"
+    onMouseDown={(e) => {
+      const startX = e.clientX;
+      const startWidth = selectedTask.panelWidth || 400;
+
+      const handleMouseMove = (e) => {
+        const newWidth = startWidth + (startX - e.clientX);
+        if (newWidth >= 250 && newWidth <= 600) {
+          setSelectedTask((prev) => ({ ...prev, panelWidth: newWidth }));
+        }
+      };
+
+      const handleMouseUp = () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }}
+  />
+
+  {/* right Panel content starts */}
+  <div className="pl-2">
     <div className="flex justify-between items-center mb-4">
       <h2 className="text-lg font-bold">Task Details</h2>
       <button
@@ -283,20 +339,147 @@ useEffect(() => {
       </button>
     </div>
 
-    <div className="space-y-4">
-      <div>
-        <label className="block font-medium text-sm mb-1">Title</label>
-        <input
-          type="text"
-          value={selectedTask.title}
-          readOnly
-          className="w-full border rounded px-2 py-1"
-        />
-      </div>
+    <div className="pl-2 space-y-4">
 
-      {/* Next features: status, star, desc, etc. */}
+  {/* Editable title */}
+  <input
+    type="text"
+    value={selectedTask.title}
+    onChange={(e) =>
+      setSelectedTask({ ...selectedTask, title: e.target.value })
+    }
+    onBlur={() => updateTaskField("title", selectedTask.title)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+      e.preventDefault();
+      updateTaskField("title", selectedTask.title);
+     }
+    }}
+
+    className="w-full border rounded px-2 py-1"
+  />
+
+  {/* Completion toggle and star */}
+  <div className="flex items-center gap-4">
+    {/* Completed circle */}
+    <div
+      onClick={() =>
+        updateTaskField("completed", !selectedTask.completed)
+      }
+      className={`w-6 h-6 flex items-center justify-center border-2 rounded-full cursor-pointer ${
+        selectedTask.completed ? "bg-green-500 border-green-500" : "border-gray-400"
+      }`}
+    >
+      {selectedTask.completed && <Check size={14} className="text-white" />}
     </div>
+
+    {/* Star toggle */}
+    <Star
+  size={22}
+  className={`cursor-pointer ${selectedTask?.isImportant ? 'text-yellow-500' : 'text-gray-400'}`}
+  onClick={() =>
+    updateTaskField("isImportant", !selectedTask.isImportant)
+  }
+/>
+
+
   </div>
+
+  {/* Description */}
+  <div>
+    <label className="text-sm font-semibold mb-1 block">Description</label>
+    <textarea
+  className="w-full border rounded p-2"
+  value={selectedTask.description}
+  placeholder="Add a description..."
+  onChange={(e) =>
+    setSelectedTask({ ...selectedTask, description: e.target.value })
+  }
+  onBlur={() => handleUpdateTask(selectedTask._id, { description: selectedTask.description })}
+/>
+  </div>
+
+  {/* Priority */}
+  <div>
+    <label className="text-sm font-semibold mb-1 block">Priority</label>
+    <select
+  value={selectedTask.priority}
+  onChange={(e) => updateTaskField("priority", e.target.value)}
+
+  className="border rounded p-2"
+>
+  <option value="Low">Low</option>
+  <option value="Medium">Medium</option>
+  <option value="High">High</option>
+</select>
+
+  </div>
+
+  {/* Due Date */}
+  <div>
+    <label className="text-sm font-semibold mb-1 block">Due Date</label>
+    <input
+      type="date"
+      className="w-full border rounded px-2 py-1"
+      value={
+        selectedTask.dueDate
+          ? new Date(selectedTask.dueDate).toISOString().substr(0, 10)
+          : ""
+      }
+      onChange={(e) =>
+        updateTaskField("dueDate", e.target.value)
+      }
+    />
+  </div>
+
+  {/* Sub-steps */}
+  <div>
+    <label className="text-sm font-semibold mb-1 block">Steps</label>
+    <ul className="space-y-2">
+      {selectedTask.steps?.map((step, i) => (
+        <li key={i} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={step.done}
+            onChange={() => {
+              const newSteps = [...selectedTask.steps];
+              newSteps[i].done = !newSteps[i].done;
+              setSelectedTask({ ...selectedTask, steps: newSteps });
+              updateTaskField("steps", newSteps);
+            }}
+          />
+          <input
+            type="text"
+            value={step.text}
+            onChange={(e) => {
+              const newSteps = [...selectedTask.steps];
+              newSteps[i].text = e.target.value;
+              setSelectedTask({ ...selectedTask, steps: newSteps });
+            }}
+            onBlur={() => updateTaskField("steps", selectedTask.steps)}
+            className="border px-2 py-1 rounded w-full"
+          />
+        </li>
+      ))}
+    </ul>
+
+    {/* Add new step */}
+    <button
+      className="mt-2 text-sm text-blue-600 hover:underline"
+      onClick={() => {
+        const newSteps = [...(selectedTask.steps || []), { text: "", done: false }];
+        setSelectedTask({ ...selectedTask, steps: newSteps });
+        updateTaskField("steps", newSteps);
+      }}
+    >
+      ➕ Add Step
+    </button>
+  </div>
+</div>
+
+  </div>
+</div>
+
 )}
 
     </div>
