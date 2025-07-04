@@ -17,6 +17,13 @@ const Dashboard = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedTask, setSelectedTask] = useState(null);
+  const [showPanel, setShowPanel] = useState(false);
+
+  const [lists, setLists] = useState(["Default"]);
+  const [showNewListInput, setShowNewListInput] = useState(false);
+  const [newListTitle, setNewListTitle] = useState("");
+  const [currentListFilter, setCurrentListFilter] = useState("Default");
+
 
 
   const fetchTasks = useCallback(async () => {
@@ -29,39 +36,55 @@ const Dashboard = () => {
     } else if (filter === "completed") {
       all = all.filter((task) => task.completed);
     }
+    
 
-    if (filter === "all") {
-  all.sort((a, b) => {
-    const order = { High: 1, Medium: 2, Low: 3 };
-    return order[a.priority] - order[b.priority];
-  });
+    // ✅ Always sort by priority
+    all.sort((a, b) => {
+      const order = { High: 1, Medium: 2, Low: 3 };
+      return order[a.priority] - order[b.priority];
+    });
 
-  }
-  setTasks(all);
-
+    setTasks(all);
   } catch (err) {
     console.error("Error fetching tasks", err);
   }
+  
 }, [filter]);
+
 
 useEffect(() => {
   fetchTasks();
 }, [fetchTasks]);
 
+useEffect(() => {
+  if (selectedTask?.steps?.length) {
+    const lastStepInput = document.querySelector(`.steps-container input[type="text"]:last-of-type`);
+    if (lastStepInput && lastStepInput.value === "") {
+      lastStepInput.focus();
+    }
+  }
+}, [selectedTask?.steps?.length]);
 
 
   const handleAddTask = async (e) => {
-    e.preventDefault();
-    if (!newTask.trim()) return;
+  e.preventDefault();
+  if (!newTask.trim()) return;
 
-    try {
-      const res = await API.post("/api/tasks", { title: newTask });
-      setTasks([res.data, ...tasks]);
-      setNewTask("");
-    } catch (err) {
-      console.error("Error adding task", err);
-    }
-  };
+  try {
+    const res = await API.post("/api/tasks", { 
+      title: newTask,
+      steps: [], // Explicitly initialize empty steps array
+      completed: false,
+      isImportant: false,
+      priority: "Medium", // Default priority
+      list: currentListFilter
+    });
+    setTasks([res.data, ...tasks]);
+    setNewTask("");
+  } catch (err) {
+    console.error("Error adding task", err);
+  }
+};
 
   const handleToggleImportant = async (id) => {
   try {
@@ -115,25 +138,57 @@ useEffect(() => {
 
   const handleSelectTask = (task) => {
   setSelectedTask(task);
+  setShowPanel(true);
+};
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    const panel = document.querySelector('.right-panel');
+    if (panel && !panel.contains(event.target)) {
+      setShowPanel(false);
+    }
   };
 
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
   const updateTaskField = async (field, value) => {
   try {
     const updatedTask = {
       ...selectedTask,
-      [field]: value
+      [field]: value,
+      steps: field === "steps" ? value : selectedTask.steps || []
     };
 
     const res = await API.put(`/api/tasks/${selectedTask._id}`, updatedTask);
-    setSelectedTask(res.data);
-    setTasks((prev) =>
-      prev.map((t) => (t._id === selectedTask._id ? res.data : t))
-    );
+
+    // Only merge the updated field instead of replacing whole selectedTask
+    setSelectedTask((prev) => ({
+      ...prev,
+      ...res.data,
+      steps: field === "steps" ? res.data.steps : prev.steps
+    }));
+
+    // Also update task in full list
+    setTasks((prevTasks) => {
+  const updated = prevTasks.map((task) =>
+    task._id === selectedTask._id ? { ...task, [field]: value } : task
+  );
+
+  // Reapply sorting
+  updated.sort((a, b) => {
+    const order = { High: 1, Medium: 2, Low: 3 };
+    return order[a.priority] - order[b.priority];
+  });
+
+  return updated;
+});
   } catch (err) {
     console.error("Error updating field", err);
   }
 };
-
 
   return (
     <div className="flex min-h-screen">
@@ -155,9 +210,51 @@ useEffect(() => {
             <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600" onClick={() => setFilter("completed")}>
               <Check size={20} /> Completed
             </li>
-            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
-              <Plus size={20} /> New List
+            <li
+            className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
+            onClick={() => setShowNewListInput(true)}
+          >
+            <Plus size={20} /> New List
+          </li>
+          {lists.map((listName) => (
+            <li
+              key={listName}
+              onClick={() => {
+                setCurrentListFilter(listName);
+                setFilter("all"); // fallback if needed
+              }}
+              className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
+            >
+              🗂️ {listName}
             </li>
+          ))}
+
+          {showNewListInput && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newListTitle.trim()) return;
+                setLists([...lists, newListTitle.trim()]);
+                setCurrentListFilter(newListTitle.trim());
+                setShowNewListInput(false);
+                setNewListTitle("");
+              }}
+              className="mt-2 space-x-2"
+            >
+              <input
+                type="text"
+                value={newListTitle}
+                onChange={(e) => setNewListTitle(e.target.value)}
+                placeholder="List name"
+                className="border px-2 py-1 rounded"
+              />
+              <button type="submit" className="bg-blue-500 text-white px-2 py-1 rounded">
+                Save
+              </button>
+            </form>
+            
+          )}
+
             
           </ul>
         </div>
@@ -286,21 +383,21 @@ useEffect(() => {
                   </button>
                 )} */}
 
-                <button
+                {/* <button
                   onClick={() => handleDeleteTask(task._id)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={18} />
-                </button>
+                </button> */}
               </div>
             </div>
           ))}
         </div>
       </main>
 
-      {selectedTask && (
+      {showPanel && selectedTask && (
   <div
-  className="bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50"
+  className="right-panel  bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50"
   style={{ width: selectedTask.panelWidth || 400 }}
 >
   {/* Resizer line */}
@@ -328,8 +425,8 @@ useEffect(() => {
   />
 
   {/* right Panel content starts */}
-  <div className="pl-2">
-    <div className="flex justify-between items-center mb-4">
+  <div className="pl-2 ">
+    <div className="flex justify-between items-center mb-4 ">
       <h2 className="text-lg font-bold">Task Details</h2>
       <button
         onClick={() => setSelectedTask(null)}
@@ -433,51 +530,101 @@ useEffect(() => {
   </div>
 
   {/* Sub-steps */}
-  <div>
-    <label className="text-sm font-semibold mb-1 block">Steps</label>
-    <ul className="space-y-2">
-      {selectedTask.steps?.map((step, i) => (
-        <li key={i} className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={step.done}
-            onChange={() => {
+<div className="steps-container">
+  <label className="text-sm font-semibold mb-1 block">Steps</label>
+  <ul className="space-y-2">
+    {(selectedTask.steps || []).map((step, i) => (
+      <li key={i} className="flex items-center gap-2">
+        {/* Completion Circle */}
+        <div
+          onClick={() => {
+            const newSteps = [...selectedTask.steps];
+            newSteps[i].done = !newSteps[i].done;
+            setSelectedTask({ ...selectedTask, steps: newSteps });
+            updateTaskField("steps", newSteps);
+          }}
+          className={`w-4 h-4 rounded-full border-2 cursor-pointer flex items-center justify-center ${
+            step.done ? "bg-green-500 border-green-500" : "border-gray-400"
+          }`}
+        >
+          {step.done && <Check size={12} className="text-white" />}
+        </div>
+
+        {/* Step text input */}
+        <input
+          type="text"
+          value={step.text}
+          onChange={(e) => {
+            const newSteps = [...selectedTask.steps];
+            newSteps[i].text = e.target.value;
+            setSelectedTask({ ...selectedTask, steps: newSteps });
+          }}
+          onBlur={() => {
+            const newSteps = [...selectedTask.steps];
+            // Don’t save if still empty
+            if (step.text.trim() === "") return;
+            updateTaskField("steps", newSteps);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
               const newSteps = [...selectedTask.steps];
-              newSteps[i].done = !newSteps[i].done;
+              if (step.text.trim() === "") return;
+              updateTaskField("steps", newSteps);
+            }
+          }}
+          className="border px-2 py-1 rounded w-full"
+          placeholder="Type a step..."
+          autoFocus={i === selectedTask.steps.length - 1 && step.text === ""}
+        />
+
+        <button
+            type="button"
+            className="text-red-500 hover:text-red-700"
+            onClick={() => {
+              const newSteps = selectedTask.steps.filter((_, idx) => idx !== i);
               setSelectedTask({ ...selectedTask, steps: newSteps });
               updateTaskField("steps", newSteps);
             }}
-          />
-          <input
-            type="text"
-            value={step.text}
-            onChange={(e) => {
-              const newSteps = [...selectedTask.steps];
-              newSteps[i].text = e.target.value;
-              setSelectedTask({ ...selectedTask, steps: newSteps });
-            }}
-            onBlur={() => updateTaskField("steps", selectedTask.steps)}
-            className="border px-2 py-1 rounded w-full"
-          />
-        </li>
-      ))}
-    </ul>
+          >
+            ❌
+          </button>
 
-    {/* Add new step */}
-    <button
-      className="mt-2 text-sm text-blue-600 hover:underline"
-      onClick={() => {
-        const newSteps = [...(selectedTask.steps || []), { text: "", done: false }];
-        setSelectedTask({ ...selectedTask, steps: newSteps });
-        updateTaskField("steps", newSteps);
-      }}
-    >
-      ➕ Add Step
-    </button>
-  </div>
+
+      </li>
+    ))}
+  </ul>
+
+  {/* Add new step button */}
+  <button
+    type="button"
+    className="mt-2 text-sm text-blue-600 hover:underline flex items-center gap-1"
+    onClick={() => {
+  const newSteps = [...(selectedTask.steps || []), { text: "", done: false }];
+  setSelectedTask({ ...selectedTask, steps: newSteps });
+  // 👇 Don’t call updateTaskField yet
+}}
+
+
+  >
+    <Plus size={16} /> Add Step
+  </button>
 </div>
 
+</div>
+
+
   </div>
+  
+  <button
+  onClick={() => {
+    handleDeleteTask(selectedTask._id);
+    setShowPanel(false); // Close the panel after deletion
+  }}
+  className="mt-6 mx-auto min-w-full flex items-center justify-center text-white bg-red-500 hover:bg-red-600 py-2 px-4 rounded"
+>
+  <Trash2 size={18} />
+</button>
 </div>
 
 )}

@@ -16,5 +16,4 @@ router.put('/:id', protect, updateTask);
 router.delete('/:id', protect, deleteTask);
 router.patch('/important/:id', protect, toggleImportant);
 
-
 module.exports = router;
