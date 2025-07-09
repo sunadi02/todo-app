@@ -141,8 +141,6 @@ useEffect(() => {
   setShowPanel(true);
 };
 
-
-
 useEffect(() => {
   const handleClickOutside = (event) => {
     const panel = document.querySelector('.right-panel');
@@ -156,6 +154,8 @@ useEffect(() => {
     document.removeEventListener('mousedown', handleClickOutside);
   };
 }, []);
+
+
   const updateTaskField = async (field, value) => {
   try {
     const updatedTask = {
@@ -192,6 +192,31 @@ useEffect(() => {
   }
 };
 
+// const handleAddList = async (title) => {
+//   try {
+//     const res = await API.post('/api/lists', { title });
+//     setLists(prev => [res.data, ...prev]);
+//     setCurrentListFilter(res.data.title);
+//     setShowNewListInput(false);
+//   } catch (err) {
+//     console.error("Error saving list to DB", err);
+//   }
+// };
+
+useEffect(() => {
+  const fetchLists = async () => {
+    try {
+      const res = await API.get('/api/lists');
+      setLists(res.data); // Use the lists from DB
+    } catch (err) {
+      console.error("Error fetching lists", err);
+    }
+  };
+
+  fetchLists();
+}, []);
+
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -215,18 +240,19 @@ useEffect(() => {
 
             {/* Divider */}
             <hr className="border-gray-400 my-4" />
-            {lists.map((listName) => (
+            {lists.map((list) => (
   <li
-    key={listName}
+    key={list._id}
     onClick={() => {
-      setCurrentListFilter(listName);
+      setCurrentListFilter(list.title);
       setFilter("all");
     }}
     className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
   >
-    <ListTodo size={20} /> {listName}
+    <ListTodo size={18} /> {list.title}
   </li>
 ))}
+
 
 {showNewListInput ? (
   <form
@@ -239,7 +265,7 @@ useEffect(() => {
           title: newListTitle.trim(),
         });
 
-        setLists((prev) => [newListTitle.trim(), ...prev]);
+        setLists((prev) => [res.data, ...prev]);
         setCurrentListFilter(newListTitle.trim());
         setShowNewListInput(false);
         setNewListTitle("");
