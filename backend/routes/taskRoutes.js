@@ -15,5 +15,11 @@ router.post('/', protect, createTask);
 router.put('/:id', protect, updateTask);
 router.delete('/:id', protect, deleteTask);
 router.patch('/important/:id', protect, toggleImportant);
+router.post('/api/lists', async (req, res) => {
+  const { title } = req.body;
+  const newList = await List.create({ title }); 
+  res.json(newList);
+});
+
 
 module.exports = router;

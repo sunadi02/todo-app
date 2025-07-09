@@ -19,10 +19,10 @@ const Dashboard = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
 
-  const [lists, setLists] = useState(["Default"]);
+  const [lists, setLists] = useState([]);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newListTitle, setNewListTitle] = useState("");
-  const [currentListFilter, setCurrentListFilter] = useState("Default");
+  const [currentListFilter, setCurrentListFilter] = useState("");
 
 
 
@@ -77,7 +77,7 @@ useEffect(() => {
       completed: false,
       isImportant: false,
       priority: "Medium", // Default priority
-      list: currentListFilter
+      list: currentListFilter || null
     });
     setTasks([res.data, ...tasks]);
     setNewTask("");
@@ -140,6 +140,8 @@ useEffect(() => {
   setSelectedTask(task);
   setShowPanel(true);
 };
+
+
 
 useEffect(() => {
   const handleClickOutside = (event) => {
@@ -210,7 +212,66 @@ useEffect(() => {
             <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600" onClick={() => setFilter("completed")}>
               <Check size={20} /> Completed
             </li>
-            <li
+
+            {/* Divider */}
+            <hr className="border-gray-400 my-4" />
+            {lists.map((listName) => (
+  <li
+    key={listName}
+    onClick={() => {
+      setCurrentListFilter(listName);
+      setFilter("all");
+    }}
+    className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
+  >
+    <ListTodo size={20} /> {listName}
+  </li>
+))}
+
+{showNewListInput ? (
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+      if (!newListTitle.trim()) return;
+
+      try {
+        const res = await API.post("/api/lists", {
+          title: newListTitle.trim(),
+        });
+
+        setLists((prev) => [newListTitle.trim(), ...prev]);
+        setCurrentListFilter(newListTitle.trim());
+        setShowNewListInput(false);
+        setNewListTitle("");
+
+        // Redirect to list page
+        window.location.href = `/list/${encodeURIComponent(newListTitle.trim())}`;
+      } catch (err) {
+        console.error("Failed to save list", err);
+      }
+    }}
+    className="mt-2"
+  >
+    <input
+      type="text"
+      value={newListTitle}
+      onChange={(e) => setNewListTitle(e.target.value)}
+      onBlur={() => setShowNewListInput(false)}
+      autoFocus
+      className="border px-2 py-1 rounded w-full"
+      placeholder="Enter list name"
+    />
+  </form>
+) : (
+  <li
+    className="flex items-center gap-2 cursor-pointer hover:text-blue-600 mt-4"
+    onClick={() => setShowNewListInput(true)}
+  >
+    <Plus size={20} /> New List
+  </li>
+)}
+
+            {/* <li
             className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
             onClick={() => setShowNewListInput(true)}
           >
@@ -253,7 +314,7 @@ useEffect(() => {
               </button>
             </form>
             
-          )}
+          )} */}
 
             
           </ul>
