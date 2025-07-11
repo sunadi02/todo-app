@@ -29,10 +29,14 @@ const taskSchema = new mongoose.Schema({
   text: String,
   done: Boolean,
 }],
-list: String,
+// list: {
+//   type: String,
+//   default: null,
+// },
 list: {
   type: mongoose.Schema.Types.ObjectId,
-  ref: 'List'
+  ref: 'List',
+  default: null
 }
 
 

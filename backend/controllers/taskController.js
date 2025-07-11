@@ -12,18 +12,36 @@ exports.getTasks = async (req, res) => {
 
 // Create a new task
 exports.createTask = async (req, res) => {
-  const { title, dueDate } = req.body;
+  const {
+    title,
+    dueDate,
+    description,
+    completed,
+    isImportant,
+    priority,
+    steps,
+    list
+  } = req.body;
+
   try {
     const task = await Task.create({
       user: req.user._id,
       title,
-      dueDate
+      dueDate,
+      description: description || "",
+      completed: completed || false,
+      isImportant: isImportant || false,
+      priority: priority || "Medium",
+      steps: steps || [],
+      list: list || null
     });
+
     res.status(201).json(task);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 // Update a task
 exports.updateTask = async (req, res) => {

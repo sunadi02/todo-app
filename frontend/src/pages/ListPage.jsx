@@ -92,111 +92,88 @@ const ListPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 p-6">
-      <Sidebar
-        filter={null}
-        setFilter={() => {}}
-        lists={lists}
-        setLists={setLists}
-        showNewListInput={showNewListInput}
-        setShowNewListInput={setShowNewListInput}
-        newListTitle={newListTitle}
-        setNewListTitle={setNewListTitle}
-        currentListFilter={listTitle}
-        setCurrentListFilter={() => {}}
-        contextMenu={contextMenu}
-        setContextMenu={setContextMenu}
-      />
+    <div className="flex min-h-screen">
+  {/* Sidebar */}
+  <Sidebar
+    filter={null}
+    setFilter={() => {}}
+    lists={lists}
+    setLists={setLists}
+    showNewListInput={showNewListInput}
+    setShowNewListInput={setShowNewListInput}
+    newListTitle={newListTitle}
+    setNewListTitle={setNewListTitle}
+    currentListFilter={listTitle}
+    setCurrentListFilter={() => {}}
+    contextMenu={contextMenu}
+    setContextMenu={setContextMenu}
+  />
 
-        {/* <button
-        onClick={() => setSidebarVisible((prev) => !prev)}
-        className="p-2 text-gray-700 hover:text-blue-600"
-        > */}
-        {/* Three-line (hamburger) icon */}
-        {/* <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="w-6 h-6"
-        >
-            <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 5.25h16.5M3.75 12h16.5m-16.5 6.75h16.5"
-            />
-        </svg> */}
-        {/* </button> */}
-        {/* {showSidebar && (
-        <aside className="w-64 bg-gray-100 p-4 fixed left-0 top-0 h-full shadow-lg z-50">
-           <aside className="w-64 bg-gray-100 p-4 fixed left-0 top-0 h-full shadow-lg z-50">
-    
-            </aside>
-        </aside>
-        )} */}
-        {/* <button onClick={() => setShowSidebar(!showSidebar)} className="text-gray-700 mb-4">
-        <Menu size={24} />
-        </button> */}
-
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold mb-4">{decodeURIComponent(listTitle)}</h1>
-        
-        <Link to="/Dashboard" className="text-blue-500 hover:underline">
-          ← Back to Dashboard
-        </Link>
-      </div>
-
-      <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
-        <input
-          type="text"
-          placeholder="Add a new task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Add
-        </button>
-      </form>
-
-      <div className="space-y-4">
-        {tasks.map((task) => (
-          <div
-            key={task._id}
-            className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
-          >
-            <div className="flex items-center gap-2 flex-1">
-              <Star
-                size={18}
-                className={`cursor-pointer ${
-                  task.isImportant ? "text-yellow-500" : "text-gray-400"
-                }`}
-                onClick={() => toggleImportant(task._id)}
-              />
-              <div
-                onClick={() => toggleComplete(task._id, task.completed)}
-                className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${
-                  task.completed ? "bg-green-500 border-green-500" : "border-gray-400"
-                }`}
-              >
-                {task.completed && <Check size={14} className="text-white" />}
-              </div>
-              <span
-                className={`cursor-pointer ${
-                  task.completed ? "line-through text-gray-400" : ""
-                }`}
-              >
-                {task.title}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+  {/* Main content */}
+  <main className="flex-1 bg-gradient-to-br from-white to-blue-50 p-6">
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-2xl font-bold mb-4">
+        {decodeURIComponent(listTitle)}
+      </h1>
+      <Link to="/Dashboard" className="text-blue-500 hover:underline">
+        ← Back to Dashboard
+      </Link>
     </div>
+
+    <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
+      <input
+        type="text"
+        placeholder="Add a new task..."
+        value={newTask}
+        onChange={(e) => setNewTask(e.target.value)}
+        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+      >
+        Add
+      </button>
+    </form>
+
+    <div className="space-y-4">
+      {tasks.map((task) => (
+        <div
+          key={task._id}
+          className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
+        >
+          <div className="flex items-center gap-2 flex-1">
+            <Star
+              size={18}
+              className={`cursor-pointer ${
+                task.isImportant ? "text-yellow-500" : "text-gray-400"
+              }`}
+              onClick={() => toggleImportant(task._id)}
+            />
+            <div
+              onClick={() => toggleComplete(task._id, task.completed)}
+              className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${
+                task.completed
+                  ? "bg-green-500 border-green-500"
+                  : "border-gray-400"
+              }`}
+            >
+              {task.completed && <Check size={14} className="text-white" />}
+            </div>
+            <span
+              className={`cursor-pointer ${
+                task.completed ? "line-through text-gray-400" : ""
+              }`}
+            >
+              {task.title}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </main>
+</div>
+
   );
 };
 
