@@ -6,8 +6,14 @@ import {
   Plus,
   LogOut,
   Trash2,
+  Pencil,
+  
 } from "lucide-react";
 import API from "../api";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
+
+
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -24,8 +30,9 @@ const Dashboard = () => {
   const [newListTitle, setNewListTitle] = useState("");
   const [currentListFilter, setCurrentListFilter] = useState("");
 
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
 
-
+  const navigate = useNavigate();
   const fetchTasks = useCallback(async () => {
   try {
     const res = await API.get('/api/tasks');
@@ -192,17 +199,6 @@ useEffect(() => {
   }
 };
 
-// const handleAddList = async (title) => {
-//   try {
-//     const res = await API.post('/api/lists', { title });
-//     setLists(prev => [res.data, ...prev]);
-//     setCurrentListFilter(res.data.title);
-//     setShowNewListInput(false);
-//   } catch (err) {
-//     console.error("Error saving list to DB", err);
-//   }
-// };
-
 useEffect(() => {
   const fetchLists = async () => {
     try {
@@ -217,147 +213,37 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  const handleClick = () => {
+    if (contextMenu.visible) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+  window.addEventListener("click", handleClick);
+  return () => window.removeEventListener("click", handleClick);
+}, [contextMenu]);
+
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-slate-100 to-slate-200 p-4 flex flex-col justify-between">
-        <div>
-          <h2 className="text-xl font-bold mb-4">My Lists</h2>
-          <ul className="space-y-4 text-gray-700">
-            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600"  onClick={() => setFilter("all")}>
-              <ListTodo size={20} /> All Tasks
-            </li>
-            <li
-              className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
-              onClick={() => setFilter("important")}
-              >
-              <Star size={20} /> Important
-            </li>
-
-            <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600" onClick={() => setFilter("completed")}>
-              <Check size={20} /> Completed
-            </li>
-
-            {/* Divider */}
-            <hr className="border-gray-400 my-4" />
-            {lists.map((list) => (
-  <li
-    key={list._id}
-    onClick={() => {
-      setCurrentListFilter(list.title);
-      setFilter("all");
-    }}
-    className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
-  >
-    <ListTodo size={18} /> {list.title}
-  </li>
-))}
+      <Sidebar
+        filter={filter}
+        setFilter={setFilter}
+        lists={lists}
+        setLists={setLists}
+        showNewListInput={showNewListInput}
+        setShowNewListInput={setShowNewListInput}
+        newListTitle={newListTitle}
+        setNewListTitle={setNewListTitle}
+        currentListFilter={currentListFilter}
+        setCurrentListFilter={setCurrentListFilter}
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+      />
 
 
-{showNewListInput ? (
-  <form
-    onSubmit={async (e) => {
-      e.preventDefault();
-      if (!newListTitle.trim()) return;
-
-      try {
-        const res = await API.post("/api/lists", {
-          title: newListTitle.trim(),
-        });
-
-        setLists((prev) => [res.data, ...prev]);
-        setCurrentListFilter(newListTitle.trim());
-        setShowNewListInput(false);
-        setNewListTitle("");
-
-        // Redirect to list page
-        window.location.href = `/list/${encodeURIComponent(newListTitle.trim())}`;
-      } catch (err) {
-        console.error("Failed to save list", err);
-      }
-    }}
-    className="mt-2"
-  >
-    <input
-      type="text"
-      value={newListTitle}
-      onChange={(e) => setNewListTitle(e.target.value)}
-      onBlur={() => setShowNewListInput(false)}
-      autoFocus
-      className="border px-2 py-1 rounded w-full"
-      placeholder="Enter list name"
-    />
-  </form>
-) : (
-  <li
-    className="flex items-center gap-2 cursor-pointer hover:text-blue-600 mt-4"
-    onClick={() => setShowNewListInput(true)}
-  >
-    <Plus size={20} /> New List
-  </li>
-)}
-
-            {/* <li
-            className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
-            onClick={() => setShowNewListInput(true)}
-          >
-            <Plus size={20} /> New List
-          </li>
-          {lists.map((listName) => (
-            <li
-              key={listName}
-              onClick={() => {
-                setCurrentListFilter(listName);
-                setFilter("all"); // fallback if needed
-              }}
-              className="flex items-center gap-2 cursor-pointer hover:text-blue-600"
-            >
-              🗂️ {listName}
-            </li>
-          ))}
-
-          {showNewListInput && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!newListTitle.trim()) return;
-                setLists([...lists, newListTitle.trim()]);
-                setCurrentListFilter(newListTitle.trim());
-                setShowNewListInput(false);
-                setNewListTitle("");
-              }}
-              className="mt-2 space-x-2"
-            >
-              <input
-                type="text"
-                value={newListTitle}
-                onChange={(e) => setNewListTitle(e.target.value)}
-                placeholder="List name"
-                className="border px-2 py-1 rounded"
-              />
-              <button type="submit" className="bg-blue-500 text-white px-2 py-1 rounded">
-                Save
-              </button>
-            </form>
-            
-          )} */}
-
-            
-          </ul>
-        </div>
-
-        <ul className="mt-8">
-          <li
-            onClick={() => {
-              localStorage.removeItem("token");
-              window.location.href = "/";
-            }}
-            className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-700"
-          >
-            <LogOut size={20} /> Logout
-          </li>
-        </ul>
-      </aside>
+    
 
       {/* Main Content */}
       <main className="flex-1 bg-gradient-to-br from-white to-blue-50 p-6">
@@ -451,31 +337,7 @@ useEffect(() => {
               )}
 
               <div className="flex gap-3 items-center ml-4">
-                {/* {editingTaskId === task._id ? (
-                  <button
-                    onClick={() => handleUpdateTask(task._id)}
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setEditingTaskId(task._id);
-                      setEditText(task.title);
-                    }}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    <Pencil size={18} />
-                  </button>
-                )} */}
-
-                {/* <button
-                  onClick={() => handleDeleteTask(task._id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 size={18} />
-                </button> */}
+                
               </div>
             </div>
           ))}
