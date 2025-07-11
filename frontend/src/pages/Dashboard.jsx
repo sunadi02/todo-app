@@ -343,7 +343,6 @@ useEffect(() => {
           ))}
         </div>
       </main>
-
       {showPanel && selectedTask && (
   <div
   className="right-panel  bg-white border-l shadow-md p-4 fixed right-0 top-0 h-full overflow-y-auto z-50"
