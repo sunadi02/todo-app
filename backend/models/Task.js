@@ -29,15 +29,15 @@ const taskSchema = new mongoose.Schema({
   text: String,
   done: Boolean,
 }],
-// list: {
-//   type: String,
-//   default: null,
-// },
 list: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'List',
-  default: null
-}
+  type: String,
+  default: null,
+},
+// list: {
+//   type: mongoose.Schema.Types.ObjectId,
+//   ref: 'List',
+//   default: null
+// }
 
 
 }, { timestamps: true });

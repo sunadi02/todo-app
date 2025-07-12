@@ -12,6 +12,7 @@ import {
 import API from "../api";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import SidebarToggle from "../components/SidebarToggle";
 
 
 
@@ -33,19 +34,23 @@ const Dashboard = () => {
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
 
   const navigate = useNavigate();
+
   const fetchTasks = useCallback(async () => {
   try {
     const res = await API.get('/api/tasks');
     let all = res.data;
 
+    // Filter tasks based on the current view
     if (filter === "important") {
-      all = all.filter((task) => task.isImportant);
+      all = all.filter((task) => task.isImportant && !task.list);
     } else if (filter === "completed") {
-      all = all.filter((task) => task.completed);
+      all = all.filter((task) => task.completed && !task.list);
+    } else {
+      // Default "all" view - only show tasks without a list
+      all = all.filter((task) => !task.list);
     }
-    
 
-    // ✅ Always sort by priority
+    // Sort by priority
     all.sort((a, b) => {
       const order = { High: 1, Medium: 2, Low: 3 };
       return order[a.priority] - order[b.priority];
@@ -55,7 +60,6 @@ const Dashboard = () => {
   } catch (err) {
     console.error("Error fetching tasks", err);
   }
-  
 }, [filter]);
 
 
@@ -72,7 +76,6 @@ useEffect(() => {
   }
 }, [selectedTask?.steps?.length]);
 
-
   const handleAddTask = async (e) => {
   e.preventDefault();
   if (!newTask.trim()) return;
@@ -80,11 +83,11 @@ useEffect(() => {
   try {
     const res = await API.post("/api/tasks", { 
       title: newTask,
-      steps: [], // Explicitly initialize empty steps array
+      steps: [],
       completed: false,
       isImportant: false,
-      priority: "Medium", // Default priority
-      list: currentListFilter || null
+      priority: "Medium",
+      list: null // Explicitly set to null for dashboard tasks
     });
     setTasks([res.data, ...tasks]);
     setNewTask("");
@@ -212,6 +215,19 @@ useEffect(() => {
   fetchLists();
 }, []);
 
+const today = new Date().toISOString().split("T")[0];
+
+const todaysTasks = tasks.filter((task) => {
+  const taskDate = task.dueDate
+    ? new Date(task.dueDate).toISOString().split("T")[0]
+    : null;
+
+  return (
+    taskDate === today &&
+    !task.list // Only show tasks without a list
+  );
+});
+
 
 useEffect(() => {
   const handleClick = () => {
@@ -222,6 +238,14 @@ useEffect(() => {
   window.addEventListener("click", handleClick);
   return () => window.removeEventListener("click", handleClick);
 }, [contextMenu]);
+
+// Add this state at the top of your component
+const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+// Add this function
+const toggleSidebar = () => {
+  setIsSidebarOpen(!isSidebarOpen);
+};
 
 
   return (
@@ -240,15 +264,23 @@ useEffect(() => {
         setCurrentListFilter={setCurrentListFilter}
         contextMenu={contextMenu}
         setContextMenu={setContextMenu}
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
 
-
+      <SidebarToggle 
+      isSidebarOpen={isSidebarOpen} 
+      toggleSidebar={toggleSidebar} 
+      />
     
 
       {/* Main Content */}
-      <main className="flex-1 bg-gradient-to-br from-white to-blue-50 p-6">
+      <main className={`flex-1 bg-gradient-to-br from-white to-blue-50 p-6 transition-all ${
+          isSidebarOpen ? 'ml-64' : 'ml-0'
+        }`}>
         <h1 className="text-2xl font-bold mb-4">Today’s Tasks</h1>
 
+        
         <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
           <input
             type="text"

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import API from "../api";
 import {  Menu,Star, Check } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import SidebarToggle from "../components/SidebarToggle";
 
 
 const ListPage = () => {
@@ -90,6 +91,14 @@ const ListPage = () => {
   fetchLists();
 }, []);
 
+// Add this state at the top of your component
+const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+// Add this function
+const toggleSidebar = () => {
+  setIsSidebarOpen(!isSidebarOpen);
+};
+
 
   return (
     <div className="flex min-h-screen">
@@ -107,10 +116,19 @@ const ListPage = () => {
     setCurrentListFilter={() => {}}
     contextMenu={contextMenu}
     setContextMenu={setContextMenu}
+    isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
   />
 
+  <SidebarToggle 
+        isSidebarOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
+        />
+
   {/* Main content */}
-  <main className="flex-1 bg-gradient-to-br from-white to-blue-50 p-6">
+  <main className={`flex-1 bg-gradient-to-br from-white to-blue-50 p-6 transition-all ${
+    isSidebarOpen ? 'ml-64' : 'ml-0'
+  }`}>
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold mb-4">
         {decodeURIComponent(listTitle)}

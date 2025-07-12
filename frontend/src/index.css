@@ -17,3 +17,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* For smooth sidebar transitions */
+aside {
+  transition: width 0.3s ease;
+}
+
+/* Adjust main content when sidebar is closed */
+main {
+  transition: margin-left 0.3s ease;
+}

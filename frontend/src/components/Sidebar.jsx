@@ -1,6 +1,6 @@
 import {React,useEffect} from "react";
 import {  useNavigate } from "react-router-dom";
-import { ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2 } from "lucide-react";
+import { Menu, ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2 } from "lucide-react";
 import API from "../api";
 
 const Sidebar = ({
@@ -16,6 +16,8 @@ const Sidebar = ({
   setCurrentListFilter,
   contextMenu,
   setContextMenu,
+  isSidebarOpen,
+  toggleSidebar,
 }) => {
   const navigate = useNavigate();
 
@@ -90,7 +92,9 @@ const Sidebar = ({
   
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-slate-100 to-slate-200 p-4 flex flex-col justify-between">
+    <aside className={`bg-gradient-to-b from-slate-100 to-slate-200 p-4 flex flex-col justify-between transition-all duration-300 ${
+        isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
+      }`}>
       <div>
         <h2 className="text-xl font-bold mb-4">My Lists</h2>
         <ul className="space-y-4 text-gray-700">
