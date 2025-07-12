@@ -92,11 +92,16 @@ const Sidebar = ({
   
 
   return (
-    <aside className={`bg-gradient-to-b from-slate-100 to-slate-200 p-4 flex flex-col justify-between transition-all duration-300 ${
-        isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
-      }`}>
+    <aside 
+  className={`fixed h-full bg-gradient-to-br from-white to-blue-50 p-4 flex flex-col justify-between transition-all duration-300 z-40 ${
+    isSidebarOpen ? ' w-64' : 'w-0 opacity-0'
+  }`}
+  style={{
+    boxShadow: isSidebarOpen ? '4px 0 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+  }}
+>
       <div>
-        <h2 className="text-xl font-bold mb-4">My Lists</h2>
+        <h2 className="mt-7 text-xl font-bold mb-4">My Lists</h2>
         <ul className="space-y-4 text-gray-700">
           <li className="flex items-center gap-2 cursor-pointer hover:text-blue-600" onClick={() => setFilter("all")}>
             <ListTodo size={20} /> All Tasks

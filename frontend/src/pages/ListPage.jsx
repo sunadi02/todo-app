@@ -101,7 +101,7 @@ const toggleSidebar = () => {
 
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gradient-to-br from-white to-blue-50">
   {/* Sidebar */}
   <Sidebar
     filter={null}
@@ -126,9 +126,9 @@ const toggleSidebar = () => {
         />
 
   {/* Main content */}
-  <main className={`flex-1 bg-gradient-to-br from-white to-blue-50 p-6 transition-all ${
-    isSidebarOpen ? 'ml-64' : 'ml-0'
-  }`}>
+  <main className={`flex-1 transition-all duration-300 ${
+    isSidebarOpen ? 'ml-80 mt-9 pl-8 mr-16' : 'mt-9 ml-7 mr-7 pl-16'
+  } pr-8`}>
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold mb-4">
         {decodeURIComponent(listTitle)}
