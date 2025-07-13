@@ -14,11 +14,8 @@ import {
   
 } from "lucide-react";
 import API from "../api";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import SidebarToggle from "../components/SidebarToggle";
-
-
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -37,12 +34,7 @@ const Dashboard = () => {
 
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
 
-  const [user, setUser] = useState({
-  name: 'John Doe', // Replace with dynamic data
-  avatar: 'https://example.com/profile.jpg'
-  });
-
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchTasks = useCallback(async () => {
   try {
@@ -117,6 +109,18 @@ useEffect(() => {
   }
 };
 
+// Add this filtering function
+const filteredTasks = tasks.filter(task => {
+  const matchesFilter = 
+    (filter === "important" ? task.isImportant :
+     filter === "completed" ? task.completed :
+     true) && !task.list;
+  
+  const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  
+  return matchesFilter && matchesSearch;
+});
 
   const handleDeleteTask = async (id) => {
     try {
@@ -174,7 +178,6 @@ useEffect(() => {
   };
 }, []);
 
-
   const updateTaskField = async (field, value) => {
   try {
     const updatedTask = {
@@ -224,18 +227,6 @@ useEffect(() => {
   fetchLists();
 }, []);
 
-const today = new Date().toISOString().split("T")[0];
-
-const todaysTasks = tasks.filter((task) => {
-  const taskDate = task.dueDate
-    ? new Date(task.dueDate).toISOString().split("T")[0]
-    : null;
-
-  return (
-    taskDate === today &&
-    !task.list // Only show tasks without a list
-  );
-});
 
 
 useEffect(() => {
@@ -288,7 +279,7 @@ const toggleSidebar = () => {
       {/* Main Content */}
       <main className={`flex-1 transition-all duration-300 ${
         isSidebarOpen ? 'ml-80 mt-9 pl-8 mr-16' : 'mt-9 ml-7 mr-16 pl-16'
-      } pr-8 mt-16`}>
+      } pr-8 `}>
         <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
           Today’s Tasks</h1>
 
@@ -310,7 +301,7 @@ const toggleSidebar = () => {
         </form>
 
         <div className="space-y-4">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <div
               key={task._id}
               className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
@@ -388,7 +379,10 @@ const toggleSidebar = () => {
         </div>
       </main>
 
-          <TopNavbar />
+          <TopNavbar 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
 
       </div>
       {showPanel && selectedTask && (

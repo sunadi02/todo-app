@@ -25,10 +25,7 @@ const ListPage = () => {
   const [newListTitle, setNewListTitle] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
 
-  const [user, setUser] = useState({
-  name: 'John Doe', // Replace with dynamic data
-  avatar: 'https://example.com/profile.jpg'
-});
+  const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
   const fetchTasks = async () => {
@@ -305,7 +302,10 @@ useEffect(() => {
       ))}
     </div>
   </main>
-<TopNavbar />
+<TopNavbar 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
   
   </div>
   {showPanel && selectedTask && (

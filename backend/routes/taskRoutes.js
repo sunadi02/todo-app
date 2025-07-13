@@ -5,7 +5,8 @@ const {
   createTask,
   updateTask,
   deleteTask,
-  toggleImportant
+  toggleImportant,
+  searchTasks
 } = require('../controllers/taskController');
 const protect = require('../middleware/authMiddleware');
 
@@ -20,6 +21,8 @@ router.post('/api/lists', async (req, res) => {
   const newList = await List.create({ title }); 
   res.json(newList);
 });
+router.get('/search', protect, searchTasks);
+
 
 
 module.exports = router;

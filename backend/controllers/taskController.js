@@ -88,5 +88,20 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
-
+exports.searchTasks = async (req, res) => {
+  try {
+    const query = req.query.q;
+    const tasks = await Task.find({
+      user: req.user._id,
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } }
+      ]
+    }).sort({ createdAt: -1 });
+    
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: 'Search failed', error: err.message });
+  }
+};
 
