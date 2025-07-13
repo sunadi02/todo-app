@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+
 import { useParams, Link } from "react-router-dom";
+import TopNavbar from '../components/TopNavbar';
 import API from "../api";
 import {  Menu,Star, Check } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import SidebarToggle from "../components/SidebarToggle";
-
+import TaskDetailPanel from '../components/TaskDetailPanel';
 
 const ListPage = () => {
   const { listTitle } = useParams();
@@ -12,11 +14,21 @@ const ListPage = () => {
   const [newTask, setNewTask] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [filter, setFilter] = useState('all');
+
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showPanel, setShowPanel] = useState(false);
+
 
   const [lists, setLists] = useState([]);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newListTitle, setNewListTitle] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
+
+  const [user, setUser] = useState({
+  name: 'John Doe', // Replace with dynamic data
+  avatar: 'https://example.com/profile.jpg'
+});
 
     useEffect(() => {
   const fetchTasks = async () => {
@@ -50,6 +62,14 @@ const ListPage = () => {
       setNewTask("");
     } catch (err) {
       console.error("Error adding task", err);
+    }
+  };
+  const handleDeleteTask = async (id) => {
+    try {
+      await API.delete(`/api/tasks/${id}`);
+      setTasks(tasks.filter((task) => task._id !== id));
+    } catch (err) {
+      console.error("Error deleting task", err);
     }
   };
 
@@ -99,43 +119,135 @@ const toggleSidebar = () => {
   setIsSidebarOpen(!isSidebarOpen);
 };
 
+useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await API.get("/api/tasks");
+        let filtered = res.data.filter((task) => task.list === listTitle);
+        
+        // Apply filters
+        if (filter === "important") {
+          filtered = filtered.filter((task) => task.isImportant);
+        } else if (filter === "completed") {
+          filtered = filtered.filter((task) => task.completed);
+        }
+        
+        setTasks(filtered);
+      } catch (err) {
+        console.error("Error loading tasks", err);
+      }
+    };
+
+    fetchTasks();
+  }, [listTitle, filter]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const panel = document.querySelector('.right-panel');
+      if (panel && !panel.contains(event.target)) {
+        setShowPanel(false);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const updateTaskField = async (field, value) => {
+  try {
+    const updatedTask = {
+      ...selectedTask,
+      [field]: value,
+      steps: field === "steps" ? value : selectedTask.steps || []
+    };
+
+    const res = await API.put(`/api/tasks/${selectedTask._id}`, updatedTask);
+    setSelectedTask((prev) => ({
+      ...prev,
+      ...res.data,
+      steps: field === "steps" ? res.data.steps : prev.steps
+    }));
+
+    setTasks((prevTasks) => {
+      const updated = prevTasks.map((task) =>
+        task._id === selectedTask._id ? { ...task, [field]: value } : task
+      );
+      return updated;
+    });
+  } catch (err) {
+    console.error("Error updating field", err);
+  }
+
+  
+};
+
+
+
+
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-white to-blue-50">
-  {/* Sidebar */}
-  <Sidebar
-    filter={null}
-    setFilter={() => {}}
-    lists={lists}
-    setLists={setLists}
-    showNewListInput={showNewListInput}
-    setShowNewListInput={setShowNewListInput}
-    newListTitle={newListTitle}
-    setNewListTitle={setNewListTitle}
-    currentListFilter={listTitle}
-    setCurrentListFilter={() => {}}
-    contextMenu={contextMenu}
-    setContextMenu={setContextMenu}
-    isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-  />
+    <div className="flex min-h-screen bg-gradient-to-t from-gray-100">
+     <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-20 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
+        {/* Sidebar */}
+      <Sidebar
+        filter={null}
+        setFilter={() => {}}
+        lists={lists}
+        setLists={setLists}
+        showNewListInput={showNewListInput}
+        setShowNewListInput={setShowNewListInput}
+        newListTitle={newListTitle}
+        setNewListTitle={setNewListTitle}
+        currentListFilter={listTitle}
+        setCurrentListFilter={() => {}}
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+        isSidebarOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+      />
 
-  <SidebarToggle 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
-        />
+      <SidebarToggle 
+            isSidebarOpen={isSidebarOpen} 
+            toggleSidebar={toggleSidebar} 
+            />
+  </div> 
+
+    <div className="flex-1 flex flex-col">
+          
 
   {/* Main content */}
   <main className={`flex-1 transition-all duration-300 ${
     isSidebarOpen ? 'ml-80 mt-9 pl-8 mr-16' : 'mt-9 ml-7 mr-7 pl-16'
   } pr-8`}>
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="flex justify-between items-center mb-6 mt-12">
+      <h1 className="text-2xl font-bold flex items-center gap-2">
         {decodeURIComponent(listTitle)}
       </h1>
       <Link to="/Dashboard" className="text-blue-500 hover:underline">
         ← Back to Dashboard
       </Link>
+      <div className="flex gap-4">
+            <button 
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 rounded ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              All
+            </button>
+            <button 
+              onClick={() => setFilter('important')}
+              className={`px-3 py-1 rounded ${filter === 'important' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Important
+            </button>
+            <button 
+              onClick={() => setFilter('completed')}
+              className={`px-3 py-1 rounded ${filter === 'completed' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Completed
+            </button>
+          </div>
     </div>
 
     <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
@@ -179,17 +291,33 @@ const toggleSidebar = () => {
               {task.completed && <Check size={14} className="text-white" />}
             </div>
             <span
-              className={`cursor-pointer ${
-                task.completed ? "line-through text-gray-400" : ""
-              }`}
+              onClick={() => {
+                setSelectedTask(task);
+                setShowPanel(true);
+              }}
+              className={`cursor-pointer ${task.completed ? 'line-through text-gray-400' : ''}`}
             >
               {task.title}
             </span>
+            
           </div>
         </div>
       ))}
     </div>
   </main>
+<TopNavbar />
+  
+  </div>
+  {showPanel && selectedTask && (
+              <TaskDetailPanel
+                selectedTask={selectedTask}
+                setSelectedTask={setSelectedTask}
+                updateTaskField={updateTaskField}
+                handleDeleteTask={handleDeleteTask}
+                setShowPanel={setShowPanel}
+                panelWidth={selectedTask.panelWidth || 400}
+              />
+      )}
 </div>
 
   );
