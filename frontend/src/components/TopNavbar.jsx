@@ -4,7 +4,7 @@ import API from '../api';
 import { LogOut, UserX, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const TopNavbar = ({ searchQuery, setSearchQuery }) => {
+const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight  }) => {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -52,9 +52,9 @@ const TopNavbar = ({ searchQuery, setSearchQuery }) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-slate-800 shadow-sm z-30 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className={`fixed top-0 left-0 right-0 bg-slate-800 shadow-sm z-30 text-white ${navbarHeight || "h-20"}`}>
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0"></div>
           
           <div className="flex-1 max-w-xl mx-4 md:ml-12">

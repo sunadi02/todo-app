@@ -83,19 +83,33 @@ const ListPage = () => {
   };
 
   const toggleComplete = async (id, completed) => {
-    try {
-      const res = await API.put(`/api/tasks/${id}`, {
-        completed: !completed,
+  try {
+    const res = await API.put(`/api/tasks/${id}`, { completed: !completed });
+    const updatedTask = res.data;
+    
+    setTasks(prevTasks => {
+      // Remove the task temporarily
+      const filteredTasks = prevTasks.filter(task => task._id !== id);
+      
+      // Add it back at the bottom if completed, or at the top if not
+      const newTasks = updatedTask.completed 
+        ? [...filteredTasks, updatedTask]
+        : [updatedTask, ...filteredTasks];
+      
+      // Maintain priority sorting for active tasks
+      return newTasks.sort((a, b) => {
+        if (a.completed === b.completed) {
+          const order = { High: 1, Medium: 2, Low: 3 };
+          return order[a.priority] - order[b.priority];
+        }
+        return 0;
       });
-      const updated = res.data;
-      setTasks((prev) =>
-        prev.map((task) => (task._id === id ? updated : task))
-      );
-    } catch (err) {
-      console.error("Error toggling complete", err);
-    }
-  };
+    });
 
+  } catch (err) {
+    console.error("Error toggling complete", err);
+  }
+};
   useEffect(() => {
   const fetchLists = async () => {
     try {
@@ -171,6 +185,13 @@ useEffect(() => {
       const updated = prevTasks.map((task) =>
         task._id === selectedTask._id ? { ...task, [field]: value } : task
       );
+      updated.sort((a, b) => {
+          if (a.completed && !b.completed) return 1;
+          if (!a.completed && b.completed) return -1;
+
+          const order = { High: 1, Medium: 2, Low: 3 };
+          return order[a.priority] - order[b.priority];
+        });
       return updated;
     });
   } catch (err) {
@@ -179,41 +200,59 @@ useEffect(() => {
 
   
 };
+// ...existing imports and code...
+
 return (
   <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
     {/* Sidebar */}
-    <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
+    <div
+      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300`}
+      style={{
+        width: isSidebarOpen ? 320 : 0,
+        minWidth: isSidebarOpen ? 260 : 0,
+        maxWidth: isSidebarOpen ? 420 : 0,
+      }}
+    >
       <Sidebar
         filter={null}
-          setFilter={() => {}}
-          lists={lists}
-          setLists={setLists}
-          showNewListInput={showNewListInput}
-          setShowNewListInput={setShowNewListInput}
-          newListTitle={newListTitle}
-          setNewListTitle={setNewListTitle}
-          currentListFilter={listTitle}
-          setCurrentListFilter={() => {}}
-          contextMenu={contextMenu}
-          setContextMenu={setContextMenu}
-          isSidebarOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
+        setFilter={() => {}}
+        lists={lists}
+        setLists={setLists}
+        showNewListInput={showNewListInput}
+        setShowNewListInput={setShowNewListInput}
+        newListTitle={newListTitle}
+        setNewListTitle={setNewListTitle}
+        currentListFilter={listTitle}
+        setCurrentListFilter={() => {}}
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
-      <SidebarToggle 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <SidebarToggle
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
     </div>
 
-    {/* Main Content */}
-    <div className="flex-1 flex flex-col relative">
+    <div
+      className="flex-1 flex flex-col relative"
+      style={{
+        marginLeft: isSidebarOpen ? 340 : 20,
+        transition: "margin-left 0.3s",
+      }}
+    >
       {/* Top Navbar */}
-      <TopNavbar 
+      <TopNavbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        navbarHeight="h-20"
       />
 
-      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-80' : 'ml-0'} mt-16 px-4 md:px-12`}>
+      <main
+        className={`flex-1 transition-all duration-300 mt-20 px-4 md:px-12`}
+      >
+        {/* ...rest of your content... */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold flex items-center gap-3 bg-white/80 backdrop-blur rounded-xl px-6 py-3 shadow">
             <span className="text-slate-800">{decodeURIComponent(listTitle)}</span>

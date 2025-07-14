@@ -6,7 +6,7 @@ import Todo from "../../src/todo.jpg";
 
 const MIN_WIDTH = 260;
 const MAX_WIDTH = 420;
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = 350;
 
 const Sidebar = ({
   filter,
@@ -153,7 +153,7 @@ const Sidebar = ({
       )}
 
       {/* App Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-8 mt-12 ml-4">
         <img
           src={Todo}
           alt="TaskFlow Logo"
@@ -163,7 +163,7 @@ const Sidebar = ({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto ml-4">
         <h2 className="text-xl font-bold mb-4 text-slate-700">My Lists</h2>
         <ul className="space-y-2 text-slate-700">
           <li

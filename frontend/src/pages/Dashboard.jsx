@@ -35,6 +35,8 @@ const Dashboard = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [user, setUser] = useState(null);
+
   const fetchTasks = useCallback(async () => {
   try {
     const res = await API.get('/api/tasks');
@@ -69,6 +71,19 @@ const Dashboard = () => {
 useEffect(() => {
   fetchTasks();
 }, [fetchTasks]);
+
+
+useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await API.get('/api/auth/me');
+        setUser(response.data);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
 useEffect(() => {
   if (selectedTask?.steps?.length) {
@@ -272,10 +287,19 @@ const toggleSidebar = () => {
 
 
   
+// ...existing imports and code...
+
 return (
   <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
     {/* Sidebar */}
-    <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
+    <div
+      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300`}
+      style={{
+        width: isSidebarOpen ? 320 : 0, // match your Sidebar default width
+        minWidth: isSidebarOpen ? 260 : 0,
+        maxWidth: isSidebarOpen ? 420 : 0,
+      }}
+    >
       <Sidebar
         filter={filter}
         setFilter={setFilter}
@@ -292,21 +316,52 @@ return (
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
       />
-      <SidebarToggle 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <SidebarToggle
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
     </div>
 
-    <div className="flex-1 flex flex-col relative">
+    <div
+      className="flex-1 flex flex-col relative"
+      style={{
+        marginLeft: isSidebarOpen ? 340 : 20, // match sidebar width
+        transition: "margin-left 0.3s",
+      }}
+    >
       {/* Top Navbar */}
-      <TopNavbar 
+      <TopNavbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        navbarHeight="h-20" // pass custom height if you want
       />
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-80' : 'ml-0'} mt-16 px-4 md:px-12`}>
+      <main
+        className={`flex-1 transition-all duration-300 mt-20 px-4 md:px-12`}
+      >
+        {/* ...rest of your content... */}
+
+        {/* Hero Section */}
+  <section className="mb-8">
+    <div className="flex items-center gap-4 bg-slate-700/90 rounded-xl shadow px-6 py-5 transition-all duration-300">
+      <div className="flex-shrink-0">
+        <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="48" fill="#64748b" />
+          <path d="M30 52l14 14 26-26" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <div>
+        <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
+          Welcome back, <span className="text-blue-300">{user?.name || 'Loading...'}!</span>
+        </h2>
+        <p className="text-slate-200 text-sm md:text-base">
+          Quick add, mark, and organize your tasks. Productivity made simple.
+        </p>
+      </div>
+    </div>
+  </section>
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold flex items-center gap-3 bg-white/80 backdrop-blur rounded-xl px-6 py-3 shadow">
             <span className="text-slate-800">Today’s Tasks</span>

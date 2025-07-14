@@ -7,13 +7,13 @@ const TaskDetailPanel = ({
   updateTaskField,
   handleDeleteTask,
   setShowPanel,
-  panelWidth = 400
+  panelWidth = 650
 }) => {
   if (!selectedTask) return null;
 
   return (
     <div
-      className="right-panel bg-slate-500/40 border-l border-slate-100 shadow-lg p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
+      className="right-panel bg-slate-800/50 border-l border-slate-100 shadow-lg p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
       style={{ width: panelWidth }}
     >
       {/* Resizer line */}
