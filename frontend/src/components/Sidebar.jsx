@@ -1,8 +1,12 @@
-import {React,  useEffect} from "react";
-import { useLocation,useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2 } from "lucide-react";
 import API from "../api";
 import Todo from "../../src/todo.jpg";
+
+const MIN_WIDTH = 260;
+const MAX_WIDTH = 420;
+const DEFAULT_WIDTH = 280;
 
 const Sidebar = ({
   filter,
@@ -21,6 +25,8 @@ const Sidebar = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH);
+  const sidebarRef = useRef();
 
   const getActiveFilter = () => {
     if (location.pathname.includes('/list/')) return null;
@@ -54,7 +60,7 @@ const Sidebar = ({
       console.error("Error saving list to DB", err);
     }
   };
-  
+
   useEffect(() => {
     const fetchLists = async () => {
       try {
@@ -66,7 +72,7 @@ const Sidebar = ({
     };
     fetchLists();
   }, []);
-  
+
   const handleRenameList = async (list, newTitle) => {
     try {
       await API.put(`/api/lists/${list._id}`, { title: newTitle });
@@ -82,7 +88,7 @@ const Sidebar = ({
       console.error("Failed to rename list:", err);
     }
   };
-  
+
   useEffect(() => {
     const handleClick = () => {
       if (contextMenu.visible) {
@@ -93,32 +99,76 @@ const Sidebar = ({
     return () => window.removeEventListener("click", handleClick);
   }, [contextMenu]);
 
+  // --- Resizer logic ---
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    setSidebarWidth(DEFAULT_WIDTH);
+  }, [isSidebarOpen]);
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+
+    const onMouseMove = (moveEvent) => {
+      const newWidth = Math.min(
+        Math.max(startWidth + (moveEvent.clientX - startX), MIN_WIDTH),
+        MAX_WIDTH
+      );
+      setSidebarWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  // --- End resizer logic ---
+
   return (
-    <aside 
-      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gradient-to-b from-zinc-200 to-slate-100 p-6 flex flex-col z-30 transition-all duration-300 ${
-        isSidebarOpen ? 'w-72' : 'w-0 overflow-hidden'
+    <aside
+      ref={sidebarRef}
+      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-100 to-slate-200 p-6 flex flex-col z-30 transition-all duration-300 ${
+        isSidebarOpen ? '' : 'w-0 overflow-hidden'
       }`}
       style={{
-        boxShadow: isSidebarOpen ? '4px 0 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+        width: isSidebarOpen ? sidebarWidth : 0,
+        minWidth: isSidebarOpen ? MIN_WIDTH : 0,
+        maxWidth: isSidebarOpen ? MAX_WIDTH : 0,
+        boxShadow: isSidebarOpen ? '4px 0 6px -1px rgba(0, 0, 0, 0.07)' : 'none',
+        transition: 'width 0.3s'
       }}
     >
+      {/* Resizer */}
+      {isSidebarOpen && (
+        <div
+          className="absolute top-0 right-0 h-full w-2 cursor-ew-resize z-40"
+          style={{ userSelect: "none" }}
+          onMouseDown={handleMouseDown}
+        />
+      )}
+
       {/* App Header */}
       <div className="flex items-center gap-3 mb-8">
-        <img 
-          src={Todo} 
-          alt="TaskFlow Logo" 
+        <img
+          src={Todo}
+          alt="TaskFlow Logo"
           className="h-8 w-8 object-contain"
         />
-        <h1 className="text-2xl font-bold text-slate-600">TaskFlow</h1>
+        <h1 className="text-2xl font-bold text-slate-700">TaskFlow</h1>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">My Lists</h2>
-        <ul className="space-y-4 text-gray-700">
-          <li 
+        <h2 className="text-xl font-bold mb-4 text-slate-700">My Lists</h2>
+        <ul className="space-y-2 text-slate-700">
+          <li
             className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-              activeFilter === 'all' ? 'bg-blue-100 text-blue-600' : 'hover:text-blue-600 hover:bg-blue-50'
+              activeFilter === 'all' ? 'bg-blue-100 text-blue-700' : 'hover:text-blue-700 hover:bg-blue-100'
             }`}
             onClick={() => {
               setFilter("all");
@@ -127,9 +177,9 @@ const Sidebar = ({
           >
             <ListTodo size={20} /> All Tasks
           </li>
-          <li 
+          <li
             className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-              activeFilter === 'important' ? 'bg-blue-100 text-blue-600' : 'hover:text-blue-600 hover:bg-blue-50'
+              activeFilter === 'important' ? 'bg-blue-100 text-blue-700' : 'hover:text-blue-700 hover:bg-blue-100'
             }`}
             onClick={() => {
               setFilter("important");
@@ -138,9 +188,9 @@ const Sidebar = ({
           >
             <Star size={20} /> Important
           </li>
-          <li 
+          <li
             className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-              activeFilter === 'completed' ? 'bg-blue-100 text-blue-600' : 'hover:text-blue-600 hover:bg-blue-50'
+              activeFilter === 'completed' ? 'bg-blue-100 text-blue-700' : 'hover:text-blue-700 hover:bg-blue-100'
             }`}
             onClick={() => {
               setFilter("completed");
@@ -149,14 +199,14 @@ const Sidebar = ({
           >
             <Check size={20} /> Completed
           </li>
-          
-          <hr className="border-gray-400 my-4" />
-          
+
+          <hr className="border-gray-300 my-4" />
+
           {lists.map((listName) => (
             <li
               key={listName._id}
               className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-                currentListFilter === listName.title ? 'bg-blue-100 text-blue-600' : 'hover:text-blue-600 hover:bg-blue-50'
+                currentListFilter === listName.title ? 'bg-blue-100 text-blue-700' : 'hover:text-blue-700 hover:bg-blue-100'
               }`}
               onClick={() => navigate(`/list/${encodeURIComponent(listName.title)}`)}
               onContextMenu={(e) => {
@@ -189,7 +239,7 @@ const Sidebar = ({
             </form>
           ) : (
             <li
-              className="flex items-center gap-2 cursor-pointer hover:text-blue-600 hover:bg-blue-50 p-2 rounded mt-4"
+              className="flex items-center gap-2 cursor-pointer hover:text-blue-700 hover:bg-blue-100 p-2 rounded mt-4"
               onClick={() => setShowNewListInput(true)}
             >
               <Plus size={20} /> New List
@@ -199,7 +249,7 @@ const Sidebar = ({
       </div>
 
       {/* Logout Button */}
-      <div className="mt-4 pt-4 border-t border-gray-300">
+      <div className="mt-4 pt-4 border-t border-gray-200">
         <button
           onClick={() => {
             localStorage.removeItem("token");
@@ -235,7 +285,7 @@ const Sidebar = ({
               <Pencil size={15} /> <span>Rename List</span>
             </div>
           </button>
-          
+
           <button
             className="block w-full text-left hover:bg-red-100 px-6 py-1 text-red-600"
             onClick={() => handleDeleteList(contextMenu.list)}

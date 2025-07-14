@@ -3,10 +3,9 @@ import TopNavbar from '../components/TopNavbar';
 import TaskDetailPanel from '../components/TaskDetailPanel';
 
 import {
-  
+  Menu, Check,
   ListTodo,
   Star,
-  Check,
   Plus,
   LogOut,
   Trash2,
@@ -53,6 +52,9 @@ const Dashboard = () => {
 
     // Sort by priority
     all.sort((a, b) => {
+      if (a.completed && !b.completed) return 1;
+      if (!a.completed && b.completed) return -1;
+
       const order = { High: 1, Medium: 2, Low: 3 };
       return order[a.priority] - order[b.priority];
     });
@@ -147,17 +149,35 @@ const filteredTasks = tasks.filter(task => {
 };
 
 
-  const handleToggleComplete = async (id, completed) => {
+  // Replace your handleToggleComplete function with:
+const handleToggleComplete = async (id, completed) => {
   try {
     const res = await API.put(`/api/tasks/${id}`, { completed: !completed });
-    const updated = res.data;
-    setTasks((prev) =>
-      prev.map((task) => (task._id === id ? updated : task))
-    );
+    const updatedTask = res.data;
+    
+    setTasks(prevTasks => {
+      // Remove the task temporarily
+      const filteredTasks = prevTasks.filter(task => task._id !== id);
+      
+      // Add it back at the bottom if completed, or at the top if not
+      const newTasks = updatedTask.completed 
+        ? [...filteredTasks, updatedTask]
+        : [updatedTask, ...filteredTasks];
+      
+      // Maintain priority sorting for active tasks
+      return newTasks.sort((a, b) => {
+        if (a.completed === b.completed) {
+          const order = { High: 1, Medium: 2, Low: 3 };
+          return order[a.priority] - order[b.priority];
+        }
+        return 0;
+      });
+    });
+
   } catch (err) {
     console.error("Error toggling complete", err);
   }
-  };
+};
 
   const handleSelectTask = (task) => {
   setSelectedTask(task);
@@ -203,6 +223,9 @@ useEffect(() => {
 
   // Reapply sorting
   updated.sort((a, b) => {
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+
     const order = { High: 1, Medium: 2, Low: 3 };
     return order[a.priority] - order[b.priority];
   });
@@ -248,9 +271,11 @@ const toggleSidebar = () => {
 };
 
 
-  return (
-    <div className="flex min-h-screen bg-gradient-to-t from-gray-100 to-white pt-16">
-      {/* Sidebar */}
+  
+return (
+  <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
+    {/* Sidebar */}
+    <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
       <Sidebar
         filter={filter}
         setFilter={setFilter}
@@ -267,124 +292,106 @@ const toggleSidebar = () => {
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
       />
-
       <SidebarToggle 
-      isSidebarOpen={isSidebarOpen} 
-      toggleSidebar={toggleSidebar} 
+        isSidebarOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
       />
-    
-      <div className="flex-1 flex flex-col">
-      
+    </div>
+
+    <div className="flex-1 flex flex-col relative">
+      {/* Top Navbar */}
+      <TopNavbar 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${
-        isSidebarOpen ? 'ml-80 mt-9 pl-8 mr-16' : 'mt-9 ml-7 mr-16 pl-16'
-      } pr-8 `}>
-        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          Today’s Tasks</h1>
+      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-80' : 'ml-0'} mt-16 px-4 md:px-12`}>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold flex items-center gap-3 bg-white/80 backdrop-blur rounded-xl px-6 py-3 shadow">
+            <span className="text-slate-800">Today’s Tasks</span>
+          </h1>
+        </div>
 
-        
-        <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
+        {/* Filter Buttons */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => setFilter('all')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Menu size={18} /> All
+          </button>
+          <button
+            onClick={() => setFilter('important')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'important' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Star size={18} /> Important
+          </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Check size={18} /> Completed
+          </button>
+        </div>
+
+        {/* Add Task */}
+        <form className="mb-8 flex gap-4 items-center" onSubmit={handleAddTask}>
           <input
             type="text"
             placeholder="Add a new task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-slate-200 rounded-xl px-5 py-3 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
           />
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition-colors font-semibold"
           >
             Add
           </button>
         </form>
 
+        {/* Task List */}
         <div className="space-y-4">
           {filteredTasks.map((task) => (
             <div
               key={task._id}
-              className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
+              className={`group p-5 bg-white rounded-xl flex items-center justify-between shadow border-l-4 transition-all duration-200
+                ${task.completed ? 'border-slate-500' : 'border-blue-200'}
+                hover:shadow-lg`}
             >
-              {editingTaskId === task._id ? (
-                <input
-                  type="text"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  onBlur={() => handleUpdateTask(task._id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleUpdateTask(task._id);
-                    }
-                  }}
-              autoFocus
-              className="border px-2 py-1 rounded-md w-full"
-            />
-
-
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Star
-                    size={18}
-                    className={`cursor-pointer ${
-                      task.isImportant ? 'text-yellow-500' : 'text-gray-400'
-                    }`}
-                    onClick={() => handleToggleImportant(task._id)}
-                  />
-                  <div className="flex items-center gap-2 flex-1">
-  {/* Completion toggle circle */}
-  <div
-    onClick={() => handleToggleComplete(task._id, task.completed)}
-    className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${
-      task.completed ? 'bg-green-500 border-green-500' : 'border-gray-400'
-    }`}
-  >
-    {task.completed && <Check size={14} className="text-white" />}
-  </div>
-
-  {/* Inline edit or normal title */}
-  {editingTaskId === task._id ? (
-    <input
-      type="text"
-      className="border border-gray-300 rounded px-2 py-1 w-full"
-      value={editedTitle}
-      autoFocus
-      onChange={(e) => setEditedTitle(e.target.value)}
-      onBlur={() => handleUpdateTask(task._id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          handleUpdateTask(task._id);
-        }
-      }}
-    />
-  ) : (
-    <span
-      onClick={() => handleSelectTask(task)}
-      className={`cursor-pointer ${task.completed ? 'line-through text-gray-400' : ''}`}
-    >
-      {task.title}
-    </span>
-  )}
-</div>
-
+              <div className="flex items-center gap-4 flex-1">
+                <Star
+                  size={22}
+                  className={`cursor-pointer transition-colors duration-200
+                    ${task.isImportant ? "text-yellow-400" : "text-slate-300 group-hover:text-yellow-400"}`}
+                  onClick={() => handleToggleImportant(task._id)}
+                />
+                <div
+                  onClick={() => handleToggleComplete(task._id, task.completed)}
+                  className={`w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
+                    ${task.completed ? "bg-green-500 border-green-500" : "border-slate-300 group-hover:border-green-400"}`}
+                >
+                  {task.completed && <Check size={16} className="text-white" />}
                 </div>
-
-              )}
-
-              <div className="flex gap-3 items-center ml-4">
-                
+                <span
+                  onClick={() => handleSelectTask(task)}
+                  className={`cursor-pointer text-lg font-medium transition-colors duration-200
+                    ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 group-hover:text-blue-600'}`}
+                >
+                  {task.title}
+                </span>
               </div>
             </div>
           ))}
         </div>
       </main>
 
-          <TopNavbar 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-
-      </div>
+      {/* Task Detail Panel */}
       {showPanel && selectedTask && (
         <TaskDetailPanel
           selectedTask={selectedTask}
@@ -395,9 +402,8 @@ const toggleSidebar = () => {
           panelWidth={selectedTask.panelWidth || 400}
         />
       )}
-
     </div>
-  );
-};
+  </div>
+)};
 
 export default Dashboard;

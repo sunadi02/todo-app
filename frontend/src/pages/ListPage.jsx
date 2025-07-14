@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import TopNavbar from '../components/TopNavbar';
 import API from "../api";
-import {  Menu,Star, Check } from "lucide-react";
+import {  Star, Check, Menu } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import SidebarToggle from "../components/SidebarToggle";
 import TaskDetailPanel from '../components/TaskDetailPanel';
@@ -179,148 +179,145 @@ useEffect(() => {
 
   
 };
-
-
-
-
-
-  return (
-    <div className="flex min-h-screen bg-gradient-to-t from-gray-100">
-     <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-20 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
-        {/* Sidebar */}
+return (
+  <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
+    {/* Sidebar */}
+    <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-0'}`}>
       <Sidebar
         filter={null}
-        setFilter={() => {}}
-        lists={lists}
-        setLists={setLists}
-        showNewListInput={showNewListInput}
-        setShowNewListInput={setShowNewListInput}
-        newListTitle={newListTitle}
-        setNewListTitle={setNewListTitle}
-        currentListFilter={listTitle}
-        setCurrentListFilter={() => {}}
-        contextMenu={contextMenu}
-        setContextMenu={setContextMenu}
-        isSidebarOpen={isSidebarOpen}
-            toggleSidebar={toggleSidebar}
+          setFilter={() => {}}
+          lists={lists}
+          setLists={setLists}
+          showNewListInput={showNewListInput}
+          setShowNewListInput={setShowNewListInput}
+          newListTitle={newListTitle}
+          setNewListTitle={setNewListTitle}
+          currentListFilter={listTitle}
+          setCurrentListFilter={() => {}}
+          contextMenu={contextMenu}
+          setContextMenu={setContextMenu}
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
       />
-
       <SidebarToggle 
-            isSidebarOpen={isSidebarOpen} 
-            toggleSidebar={toggleSidebar} 
-            />
-  </div> 
-
-    <div className="flex-1 flex flex-col">
-          
-
-  {/* Main content */}
-  <main className={`flex-1 transition-all duration-300 ${
-    isSidebarOpen ? 'ml-80 mt-9 pl-8 mr-16' : 'mt-9 ml-7 mr-7 pl-16'
-  } pr-8`}>
-    <div className="flex justify-between items-center mb-6 mt-12">
-      <h1 className="text-2xl font-bold flex items-center gap-2">
-        {decodeURIComponent(listTitle)}
-      </h1>
-      <Link to="/Dashboard" className="text-blue-500 hover:underline">
-        ← Back to Dashboard
-      </Link>
-      <div className="flex gap-4">
-            <button 
-              onClick={() => setFilter('all')}
-              className={`px-3 py-1 rounded ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              All
-            </button>
-            <button 
-              onClick={() => setFilter('important')}
-              className={`px-3 py-1 rounded ${filter === 'important' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Important
-            </button>
-            <button 
-              onClick={() => setFilter('completed')}
-              className={`px-3 py-1 rounded ${filter === 'completed' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Completed
-            </button>
-          </div>
-    </div>
-
-    <form className="mb-6 flex gap-4" onSubmit={handleAddTask}>
-      <input
-        type="text"
-        placeholder="Add a new task..."
-        value={newTask}
-        onChange={(e) => setNewTask(e.target.value)}
-        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        isSidebarOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
       />
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-      >
-        Add
-      </button>
-    </form>
-
-    <div className="space-y-4">
-      {tasks.map((task) => (
-        <div
-          key={task._id}
-          className="p-4 bg-gray-100 rounded-lg flex items-center justify-between shadow-sm"
-        >
-          <div className="flex items-center gap-2 flex-1">
-            <Star
-              size={18}
-              className={`cursor-pointer ${
-                task.isImportant ? "text-yellow-500" : "text-gray-400"
-              }`}
-              onClick={() => toggleImportant(task._id)}
-            />
-            <div
-              onClick={() => toggleComplete(task._id, task.completed)}
-              className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${
-                task.completed
-                  ? "bg-green-500 border-green-500"
-                  : "border-gray-400"
-              }`}
-            >
-              {task.completed && <Check size={14} className="text-white" />}
-            </div>
-            <span
-              onClick={() => {
-                setSelectedTask(task);
-                setShowPanel(true);
-              }}
-              className={`cursor-pointer ${task.completed ? 'line-through text-gray-400' : ''}`}
-            >
-              {task.title}
-            </span>
-            
-          </div>
-        </div>
-      ))}
     </div>
-  </main>
-<TopNavbar 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-  
-  </div>
-  {showPanel && selectedTask && (
-              <TaskDetailPanel
-                selectedTask={selectedTask}
-                setSelectedTask={setSelectedTask}
-                updateTaskField={updateTaskField}
-                handleDeleteTask={handleDeleteTask}
-                setShowPanel={setShowPanel}
-                panelWidth={selectedTask.panelWidth || 400}
-              />
-      )}
-</div>
 
-  );
-};
+    {/* Main Content */}
+    <div className="flex-1 flex flex-col relative">
+      {/* Top Navbar */}
+      <TopNavbar 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+
+      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-80' : 'ml-0'} mt-16 px-4 md:px-12`}>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold flex items-center gap-3 bg-white/80 backdrop-blur rounded-xl px-6 py-3 shadow">
+            <span className="text-slate-800">{decodeURIComponent(listTitle)}</span>
+          </h1>
+          <Link to="/Dashboard" className="text-blue-700 hover:underline font-medium">
+            ← Back to Dashboard
+          </Link>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => setFilter('all')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Menu size={18} /> All
+          </button>
+          <button
+            onClick={() => setFilter('important')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'important' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Star size={18} /> Important
+          </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow transition-all duration-200
+              ${filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+          >
+            <Check size={18} /> Completed
+          </button>
+        </div>
+
+        {/* Add Task */}
+        <form className="mb-8 flex gap-4 items-center" onSubmit={handleAddTask}>
+          <input
+            type="text"
+            placeholder="Add a new task..."
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            className="flex-1 border border-slate-200 rounded-xl px-5 py-3 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition-colors font-semibold"
+          >
+            Add
+          </button>
+        </form>
+
+        {/* Task List */}
+        <div className="space-y-4">
+          {tasks.map((task) => (
+            <div
+              key={task._id}
+              className={`group p-5 bg-white rounded-xl flex items-center justify-between shadow border-l-4 transition-all duration-200
+                ${task.completed ? 'border-slate-500' : 'border-blue-200'}
+                hover:shadow-lg`}
+            >
+              <div className="flex items-center gap-4 flex-1">
+                <Star
+                  size={22}
+                  className={`cursor-pointer transition-colors duration-200
+                    ${task.isImportant ? "text-yellow-400" : "text-slate-300 group-hover:text-yellow-400"}`}
+                  onClick={() => toggleImportant(task._id)}
+                />
+                <div
+                  onClick={() => toggleComplete(task._id, task.completed)}
+                  className={`w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
+                    ${task.completed ? "bg-green-500 border-green-500" : "border-slate-300 group-hover:border-green-200"}`}
+                >
+                  {task.completed && <Check size={16} className="text-white" />}
+                </div>
+                <span
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setShowPanel(true);
+                  }}
+                  className={`cursor-pointer text-lg font-medium transition-colors duration-200
+                    ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 group-hover:text-blue-600'}`}
+                >
+                  {task.title}
+                </span>
+              </div>
+              {/* Optional: Add a delete button or more actions here */}
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* Task Detail Panel */}
+      {showPanel && selectedTask && (
+        <TaskDetailPanel
+          selectedTask={selectedTask}
+          setSelectedTask={setSelectedTask}
+          updateTaskField={updateTaskField}
+          handleDeleteTask={handleDeleteTask}
+          setShowPanel={setShowPanel}
+          panelWidth={selectedTask.panelWidth || 400}
+        />
+      )}
+    </div>
+  </div>
+)};
 
 export default ListPage;
