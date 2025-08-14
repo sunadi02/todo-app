@@ -9,7 +9,7 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Make sure this directory exists
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2mb limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -38,22 +38,42 @@ router.get('/me', protect, async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email });
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    console.log('Password reset requested for:', email);
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
     }
 
-    const resetCode = generateResetCode(); // Implement this function (6-digit code)
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log('No user found for email:', email);
+      
+      return res.json({ message: 'If an account exists, a reset email has been sent' });
+    }
+
+    const resetCode = generateResetCode();
+    console.log('Generated reset code for', email, ':', resetCode);
+
     user.resetPasswordToken = resetCode;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiration
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    
     await user.save();
+    console.log('Reset token saved for user:', user._id);
 
-    await sendResetEmail(email, resetCode); // Implement this function
+    await sendResetEmail(email, resetCode);
+    console.log('Reset email sent to:', email);
 
-    res.status(200).json({ message: 'Reset code sent to email' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.json({ 
+      message: 'If an account exists, a reset email has been sent',
+      email: email
+    });
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({
+      message: 'Failed to process password reset',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -100,25 +120,28 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// In your userRoutes.js
+
 router.put('/me', protect, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const user = await User.findById(req.user._id);
-    
-    // Password change requested
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     if (newPassword) {
       if (!currentPassword) {
         return res.status(400).json({ message: 'Current password is required' });
       }
       
-      // Verify current password
+      
       const isMatch = await user.matchPassword(currentPassword);
       if (!isMatch) {
         return res.status(401).json({ message: 'Current password is incorrect' });
       }
       
-      // Validate new password length
+
       if (newPassword.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
       }
@@ -140,7 +163,7 @@ router.put('/me', protect, async (req, res) => {
   }
 });
 
-// Update profile info (name, email, avatar)
+
 router.put('/me/profile', protect, upload.single('avatar'), async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -150,7 +173,7 @@ router.put('/me/profile', protect, upload.single('avatar'), async (req, res) => 
     if (email && email.trim() !== '') user.email = email.trim();
     
     if (req.file) {
-      // Construct the full URL including your server's domain
+
       user.avatar = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     }
 
@@ -174,11 +197,11 @@ router.put('/me/profile', protect, upload.single('avatar'), async (req, res) => 
   }
 });
 
-// Update password only
+
 router.put('/me/password', protect, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user._id);
+    
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -188,17 +211,41 @@ router.put('/me/password', protect, async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
+    const user = await User.findById(req.user._id).select('+password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
       return res.status(401).json({ message: 'Current password is incorrect' });
     }
 
+
     user.password = newPassword;
     await user.save();
+    
 
-    res.status(200).json({ message: 'Password updated successfully' });
+    user.password = undefined;
+
+    res.status(200).json({ 
+      message: 'Password updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
+      }
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Password update error:', err);
+    res.status(500).json({ 
+      message: 'Password update failed',
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 

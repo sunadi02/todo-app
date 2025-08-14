@@ -29,7 +29,7 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
     confirm: false
   });
   
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -73,12 +73,10 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
     }
   };
 
-  // For Profile Modal:
     const handleCloseProfileModal = () => {
       setShowProfileModal(false);
       setProfileError('');
       setProfileSuccess('');
-      // Reset to current user data
       setProfileForm({
         name: user?.name || '',
         email: user?.email || '',
@@ -87,7 +85,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
       });
     };
 
-    // For Password Modal:
     const handleClosePasswordModal = () => {
       setShowPasswordModal(false);
       setPasswordError('');
@@ -99,7 +96,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
       });
     };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!showDropdown) return;
     const handleClick = (e) => {
@@ -116,7 +112,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
     navigate('/');
   };
 
-  // Update the handleProfileUpdate function:
 const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setProfileError('');
@@ -137,10 +132,9 @@ const handleProfileUpdate = async (e) => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
-      // Update both user state (from Dashboard) and local storage
+    
       const updatedUser = response.data.user;
-      setUser(updatedUser);  // This updates the state in Dashboard
+      setUser(updatedUser);  //updates the state in Dashboard
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
       setProfileForm({
@@ -165,7 +159,7 @@ const handleProfileUpdate = async (e) => {
   setPasswordSuccess('');
 
   try {
-    // Validate passwords match
+    //validating passwords match
     if (passwordForm.new !== passwordForm.confirm) {
       throw new Error("New passwords don't match");
     }
@@ -181,12 +175,12 @@ const handleProfileUpdate = async (e) => {
     
     setPasswordSuccess('Password updated successfully');
     
-    // Update user in state if needed
+  
     if (response.data.user) {
       setUser(response.data.user);
     }
     
-    // Clear form and close modal after 1.5 seconds
+    //clear form and close modal after 1.5 seconds
     setTimeout(() => {
       setPasswordForm({ current: '', new: '', confirm: '' });
       setShowPasswordModal(false);

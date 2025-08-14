@@ -7,11 +7,11 @@ const TaskDetailPanel = ({
   updateTaskField,
   handleDeleteTask,
   setShowPanel,
-  panelWidth = 400 // Default width
+  panelWidth = 400 
 }) => {
   const panelRef = useRef(null);
 
-  // Close panel when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (panelRef.current && !panelRef.current.contains(event.target)) {
@@ -33,7 +33,7 @@ const TaskDetailPanel = ({
 
     const handleMouseMove = (e) => {
       const newWidth = startWidth + (startX - e.clientX);
-      // Constrain between 300px and 600px
+     
       const constrainedWidth = Math.min(Math.max(newWidth, 300), 600);
       setSelectedTask(prev => ({ ...prev, panelWidth: constrainedWidth }));
     };
@@ -49,7 +49,7 @@ const TaskDetailPanel = ({
 
   if (!selectedTask) return null;
 
-  // Responsive width - smaller on mobile/tablet
+  
   const responsiveWidth = window.innerWidth < 768 ? '90vw' : `${panelWidth}px`;
 
   return (
@@ -58,7 +58,7 @@ const TaskDetailPanel = ({
       className="right-panel bg-slate-800/50 border-l border-slate-100 shadow-lg p-4 md:p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
       style={{ width: responsiveWidth }}
     >
-      {/* Resizer line - only show on desktop */}
+      
       {window.innerWidth >= 768 && (
         <div
           className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50 hover:bg-blue-300/50"
@@ -66,7 +66,7 @@ const TaskDetailPanel = ({
         />
       )}
 
-      {/* Panel content */}
+      
       <div className="pl-2">
         <div className="flex justify-between items-center mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-bold text-white">Task Details</h2>
@@ -97,7 +97,7 @@ const TaskDetailPanel = ({
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-base md:text-lg font-semibold bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          {/* Completion toggle and star */}
+          {/*completion toggle and star */}
           <div className="flex items-center gap-4">
             <div
               onClick={() =>
@@ -121,7 +121,7 @@ const TaskDetailPanel = ({
             />
           </div>
 
-          {/* Description */}
+          
           <div>
             <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Description</label>
             <textarea
@@ -136,7 +136,7 @@ const TaskDetailPanel = ({
             />
           </div>
 
-          {/* Priority */}
+          {/*priority */}
           <div>
             <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Priority</label>
             <select
@@ -150,7 +150,7 @@ const TaskDetailPanel = ({
             </select>
           </div>
 
-          {/* Due Date */}
+          {/*due date */}
           <div>
             <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Due Date</label>
             <input
@@ -167,7 +167,7 @@ const TaskDetailPanel = ({
             />
           </div>
 
-          {/* Sub-steps */}
+          {/* steps */}
           <div className="steps-container">
             <label className="text-xs md:text-sm font-semibold mb-1 block text-white ">Steps</label>
             <ul className="space-y-2">

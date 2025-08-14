@@ -99,7 +99,7 @@ const Sidebar = ({
     return () => window.removeEventListener("click", handleClick);
   }, [contextMenu]);
 
-  // --- Resizer logic ---
+  // resizer logic
   useEffect(() => {
     if (!isSidebarOpen) return;
     setSidebarWidth(DEFAULT_WIDTH);
@@ -127,7 +127,7 @@ const Sidebar = ({
     window.addEventListener("mouseup", onMouseUp);
   };
 
-  // --- End resizer logic ---
+
 
   return (
     <aside
@@ -143,7 +143,7 @@ const Sidebar = ({
         transition: 'width 0.3s'
       }}
     >
-      {/* Resizer */}
+      
       {isSidebarOpen && (
         <div
           className="absolute top-0 right-0 h-full w-2 cursor-ew-resize z-40"
@@ -152,7 +152,7 @@ const Sidebar = ({
         />
       )}
 
-      {/* App Header */}
+      
       <div className="flex items-center gap-3 mb-8 mt-12 ml-4">
         <img
           src={Todo}
@@ -248,7 +248,7 @@ const Sidebar = ({
         </ul>
       </div>
 
-      {/* Logout Button */}
+      
       <div className="mt-4 pt-4 border-t border-gray-200">
         <button
           onClick={() => {
@@ -262,7 +262,7 @@ const Sidebar = ({
         </button>
       </div>
 
-      {/* Context Menu */}
+      
       {contextMenu.visible && (
         <div
           className="absolute bg-white border rounded shadow-md z-50 p-2 space-y-2"

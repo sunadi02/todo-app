@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import TopNavbar from '../components/TopNavbar';
 import TaskDetailPanel from '../components/TaskDetailPanel';
-import { Menu, Check, ListTodo, Star, Plus, Home, List } from "lucide-react";
+import { Menu, Check, Star } from "lucide-react";
 import API from "../api";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  // State management
+
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("all");
@@ -22,10 +22,9 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading] = useState(false);
   const navigate = useNavigate();
 
-  // Check screen size and set initial sidebar state
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
@@ -38,7 +37,6 @@ const Dashboard = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isMobile && isSidebarOpen) {
@@ -57,7 +55,6 @@ const Dashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobile, isSidebarOpen]);
 
-  // Fetch tasks with filtering and sorting
   const fetchTasks = useCallback(async () => {
     try {
       const res = await API.get('/api/tasks');
@@ -66,7 +63,7 @@ const Dashboard = () => {
       if (filter === "important") all = all.filter(task => task.isImportant);
       if (filter === "completed") all = all.filter(task => task.completed);
 
-      // Sort by completion status and priority
+      //sorting by completion status and priority
       all.sort((a, b) => {
         if (a.completed && !b.completed) return 1;
         if (!a.completed && b.completed) return -1;
@@ -82,7 +79,6 @@ const Dashboard = () => {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  // Fetch user data
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -96,7 +92,7 @@ const Dashboard = () => {
     fetchUser();
   }, [navigate]);
 
-  // Fetch lists
+
   useEffect(() => {
     const fetchLists = async () => {
       try {
@@ -109,7 +105,7 @@ const Dashboard = () => {
     fetchLists();
   }, []);
 
-  // Task management functions
+
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!newTask.trim()) return;
@@ -216,7 +212,7 @@ const Dashboard = () => {
     }
   };
 
-  // Filter tasks based on current filter and search query
+
   const filteredTasks = tasks.filter(task => {
     const matchesFilter = 
       (filter === "important" ? task.isImportant :
@@ -280,7 +276,7 @@ const Dashboard = () => {
         />
 
         <main className="flex-1 px-4 md:px-6 lg:px-8 pt-16 md:pt-20 pb-20 md:pb-0">
-          {/* Hero Section */}
+          
           <section className="mb-6 md:mb-8 mt-9 md:w-full mx-auto">
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-slate-700/90 rounded-xl shadow px-4 py-3 sm:px-6 sm:py-5">
               <div className="flex-shrink-0">
@@ -300,14 +296,14 @@ const Dashboard = () => {
             </div>
           </section>
 
-          {/* Task Management Header */}
+          
           <div className="flex justify-between items-center mb-6 md:mb-8">
             <h1 className="text-xl sm:text-2xl font-bold bg-white/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
               Today's Tasks
             </h1>
           </div>
 
-          {/* Filter Buttons */}
+          
           <div className="flex flex-wrap gap-2 md:gap-4 mb-6 md:mb-8">
             {['all', 'important', 'completed'].map((f) => (
               <button
@@ -324,7 +320,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Add Task Form */}
+         
           <form className="mb-6 md:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4" onSubmit={handleAddTask}>
             <input
               type="text"
@@ -342,7 +338,7 @@ const Dashboard = () => {
             </button>
           </form>
 
-          {/* Task List */}
+          
           <div className="grid grid-cols-1 gap-4 md:gap-6">
             {filteredTasks.map((task) => (
               <div
@@ -389,7 +385,7 @@ const Dashboard = () => {
           </div>
         </main>
 
-        {/* Task Detail Panel */}
+        
         {showPanel && selectedTask && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-end">
             <div 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import TopNavbar from '../components/TopNavbar';
 import API from "../api";
-import { Star, Check, Menu, Plus } from "lucide-react";
+import { Star, Check, Menu,  } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import TaskDetailPanel from '../components/TaskDetailPanel';
 import { useNavigate } from "react-router-dom";
@@ -24,7 +24,7 @@ const ListPage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
-  // Check screen size and set initial sidebar state
+  
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
@@ -37,7 +37,6 @@ const ListPage = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isMobile && isSidebarOpen) {
@@ -56,7 +55,7 @@ const ListPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobile, isSidebarOpen]);
 
-  // Fetch user data
+  
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -70,7 +69,7 @@ const ListPage = () => {
     fetchUser();
   }, [navigate]);
 
-  // Fetch tasks with filtering
+  
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -80,7 +79,7 @@ const ListPage = () => {
         if (filter === "important") filtered = filtered.filter(task => task.isImportant);
         if (filter === "completed") filtered = filtered.filter(task => task.completed);
 
-        // Sort by completion status and priority
+        
         filtered.sort((a, b) => {
           if (a.completed && !b.completed) return 1;
           if (!a.completed && b.completed) return -1;
@@ -97,7 +96,7 @@ const ListPage = () => {
     fetchTasks();
   }, [listTitle, filter]);
 
-  // Fetch lists
+  
   useEffect(() => {
     const fetchLists = async () => {
       try {
