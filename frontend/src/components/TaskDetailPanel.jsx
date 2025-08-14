@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Star, Check, Plus, Trash2 } from 'lucide-react';
 
 const TaskDetailPanel = ({
@@ -7,43 +7,69 @@ const TaskDetailPanel = ({
   updateTaskField,
   handleDeleteTask,
   setShowPanel,
-  panelWidth = 650
+  panelWidth = 400 // Default width
 }) => {
+  const panelRef = useRef(null);
+
+  // Close panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (panelRef.current && !panelRef.current.contains(event.target)) {
+        setShowPanel(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [setShowPanel]);
+
+  // Handle resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = panelWidth;
+
+    const handleMouseMove = (e) => {
+      const newWidth = startWidth + (startX - e.clientX);
+      // Constrain between 300px and 600px
+      const constrainedWidth = Math.min(Math.max(newWidth, 300), 600);
+      setSelectedTask(prev => ({ ...prev, panelWidth: constrainedWidth }));
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
   if (!selectedTask) return null;
+
+  // Responsive width - smaller on mobile/tablet
+  const responsiveWidth = window.innerWidth < 768 ? '90vw' : `${panelWidth}px`;
 
   return (
     <div
-      className="right-panel bg-slate-800/50 border-l border-slate-100 shadow-lg p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
-      style={{ width: panelWidth }}
+      ref={panelRef}
+      className="right-panel bg-slate-800/50 border-l border-slate-100 shadow-lg p-4 md:p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
+      style={{ width: responsiveWidth }}
     >
-      {/* Resizer line */}
-      <div
-        className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50"
-        onMouseDown={(e) => {
-          const startX = e.clientX;
-          const startWidth = panelWidth;
-
-          const handleMouseMove = (e) => {
-            const newWidth = startWidth + (startX - e.clientX);
-            if (newWidth >= 250 && newWidth <= 600) {
-              setSelectedTask((prev) => ({ ...prev, panelWidth: newWidth }));
-            }
-          };
-
-          const handleMouseUp = () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-          };
-
-          window.addEventListener("mousemove", handleMouseMove);
-          window.addEventListener("mouseup", handleMouseUp);
-        }}
-      />
+      {/* Resizer line - only show on desktop */}
+      {window.innerWidth >= 768 && (
+        <div
+          className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50 hover:bg-blue-300/50"
+          onMouseDown={handleMouseDown}
+        />
+      )}
 
       {/* Panel content */}
       <div className="pl-2">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white">Task Details</h2>
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold text-white">Task Details</h2>
           <button
             onClick={() => setShowPanel(false)}
             className="text-slate-100 hover:text-red-500 text-xl font-bold"
@@ -53,7 +79,7 @@ const TaskDetailPanel = ({
           </button>
         </div>
 
-        <div className="pl-2 space-y-6">
+        <div className="pl-2 space-y-4 md:space-y-6">
           {/* Editable title */}
           <input
             type="text"
@@ -68,7 +94,7 @@ const TaskDetailPanel = ({
                 updateTaskField("title", selectedTask.title);
               }
             }}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-lg font-semibold bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-base md:text-lg font-semibold bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
           {/* Completion toggle and star */}
@@ -77,15 +103,15 @@ const TaskDetailPanel = ({
               onClick={() =>
                 updateTaskField("completed", !selectedTask.completed)
               }
-              className={`w-7 h-7 flex items-center justify-center border-2 rounded-full cursor-pointer transition-colors duration-200
+              className={`w-6 h-6 md:w-7 md:h-7 flex items-center justify-center border-2 rounded-full cursor-pointer transition-colors duration-200
                 ${selectedTask.completed ? "bg-green-500 border-green-500" : "border-slate-300 hover:border-green-400"}`}
               title="Toggle Complete"
             >
-              {selectedTask.completed && <Check size={16} className="text-white" />}
+              {selectedTask.completed && <Check size={14} className="text-white" />}
             </div>
 
             <Star
-              size={24}
+              size={22}
               className={`cursor-pointer transition-colors duration-200
                 ${selectedTask?.isImportant ? 'text-yellow-400' : 'text-slate-300 hover:text-yellow-400'}`}
               onClick={() =>
@@ -97,25 +123,26 @@ const TaskDetailPanel = ({
 
           {/* Description */}
           <div>
-            <label className="text-sm font-semibold mb-1 block text-slate-700">Description</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Description</label>
             <textarea
-              className="w-full border border-slate-200 rounded-lg p-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-slate-200 rounded-lg p-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
               value={selectedTask.description}
               placeholder="Add a description..."
               onChange={(e) =>
                 setSelectedTask({ ...selectedTask, description: e.target.value })
               }
               onBlur={() => updateTaskField("description", selectedTask.description)}
+              rows={3}
             />
           </div>
 
           {/* Priority */}
           <div>
-            <label className="text-sm font-semibold mb-1 block text-slate-700">Priority</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Priority</label>
             <select
               value={selectedTask.priority}
               onChange={(e) => updateTaskField("priority", e.target.value)}
-              className="border border-slate-200 rounded-lg p-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border border-slate-200 rounded-lg p-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -125,10 +152,10 @@ const TaskDetailPanel = ({
 
           {/* Due Date */}
           <div>
-            <label className="text-sm font-semibold mb-1 block text-slate-700">Due Date</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-white">Due Date</label>
             <input
               type="date"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
               value={
                 selectedTask.dueDate
                   ? new Date(selectedTask.dueDate).toISOString().substr(0, 10)
@@ -142,7 +169,7 @@ const TaskDetailPanel = ({
 
           {/* Sub-steps */}
           <div className="steps-container">
-            <label className="text-sm font-semibold mb-1 block text-slate-700">Steps</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-white ">Steps</label>
             <ul className="space-y-2">
               {(selectedTask.steps || []).map((step, i) => (
                 <li key={i} className="flex items-center gap-2">
@@ -153,10 +180,10 @@ const TaskDetailPanel = ({
                       setSelectedTask({ ...selectedTask, steps: newSteps });
                       updateTaskField("steps", newSteps);
                     }}
-                    className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
+                    className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
                       ${step.done ? "bg-green-500 border-green-500" : "border-slate-300 hover:border-green-400"}`}
                   >
-                    {step.done && <Check size={13} className="text-white" />}
+                    {step.done && <Check size={10} className="text-white" />}
                   </div>
 
                   <input
@@ -180,14 +207,14 @@ const TaskDetailPanel = ({
                         updateTaskField("steps", newSteps);
                       }
                     }}
-                    className="border border-slate-200 px-2 py-1 rounded-lg w-full bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="border border-slate-200 px-2 py-1 rounded-lg w-full bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
                     placeholder="Type a step..."
                     autoFocus={i === selectedTask.steps.length - 1 && step.text === ""}
                   />
 
                   <button
                     type="button"
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 text-sm md:text-base"
                     onClick={() => {
                       const newSteps = selectedTask.steps.filter((_, idx) => idx !== i);
                       setSelectedTask({ ...selectedTask, steps: newSteps });
@@ -202,13 +229,13 @@ const TaskDetailPanel = ({
 
             <button
               type="button"
-              className="mt-2 text-sm text-blue-600 hover:underline flex items-center gap-1"
+              className="mt-2 text-xs md:text-sm text-blue-600 hover:underline flex items-center gap-1"
               onClick={() => {
                 const newSteps = [...(selectedTask.steps || []), { text: "", done: false }];
                 setSelectedTask({ ...selectedTask, steps: newSteps });
               }}
             >
-              <Plus size={16} /> Add Step
+              <Plus size={14} /> Add Step
             </button>
           </div>
         </div>
@@ -219,9 +246,9 @@ const TaskDetailPanel = ({
           handleDeleteTask(selectedTask._id);
           setShowPanel(false);
         }}
-        className="mt-8 mx-auto w-full flex items-center justify-center text-white bg-red-500 hover:bg-red-600 py-2 px-4 rounded-lg shadow transition-colors"
+        className="mt-6 mx-auto w-full flex items-center justify-center text-white bg-red-500 hover:bg-red-600 py-2 px-4 rounded-lg shadow transition-colors text-sm md:text-base"
       >
-        <Trash2 size={18} className="mr-2" /> Delete Task
+        <Trash2 size={16} className="mr-2" /> Delete Task
       </button>
     </div>
   );

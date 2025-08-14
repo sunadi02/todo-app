@@ -4,8 +4,7 @@ import API from '../api';
 import { Eye, EyeOff, User, Lock, Edit, LogOut, UserX, ChevronDown, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight }) => {
-  const [user, setUser] = useState(null);
+const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -119,73 +118,83 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight }) => {
 
   // Update the handleProfileUpdate function:
 const handleProfileUpdate = async (e) => {
-  e.preventDefault();
-  setProfileError('');
-  setProfileSuccess('');
-  setIsUploading(true);
+    e.preventDefault();
+    setProfileError('');
+    setProfileSuccess('');
+    setIsUploading(true);
 
-  try {
-    const formData = new FormData();
-    formData.append('name', profileForm.name);
-    formData.append('email', profileForm.email);
-    
-    if (profileForm.avatarFile) {
-      formData.append('avatar', profileForm.avatarFile);
-    }
-
-    const response = await API.put('/api/auth/me/profile', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    try {
+      const formData = new FormData();
+      formData.append('name', profileForm.name);
+      formData.append('email', profileForm.email);
+      
+      if (profileForm.avatarFile) {
+        formData.append('avatar', profileForm.avatarFile);
       }
-    });
-    
-    // Update both user state and local storage
-    const updatedUser = response.data.user;
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    
-    setProfileForm({
-      name: updatedUser.name,
-      email: updatedUser.email,
-      avatarFile: null,
-      avatarPreview: updatedUser.avatar
-    });
-    
-    setProfileSuccess('Profile updated successfully');
-    setTimeout(() => setShowProfileModal(false), 1500);
-  } catch (err) {
-    setProfileError(err.response?.data?.message || "Failed to update profile");
-  } finally {
-    setIsUploading(false);
-  }
-};
+
+      const response = await API.put('/api/auth/me/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // Update both user state (from Dashboard) and local storage
+      const updatedUser = response.data.user;
+      setUser(updatedUser);  // This updates the state in Dashboard
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      setProfileForm({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatarFile: null,
+        avatarPreview: updatedUser.avatar
+      });
+      
+      setProfileSuccess('Profile updated successfully');
+      setTimeout(() => setShowProfileModal(false), 1500);
+    } catch (err) {
+      setProfileError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handlePasswordUpdate = async (e) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
+  e.preventDefault();
+  setPasswordError('');
+  setPasswordSuccess('');
 
+  try {
+    // Validate passwords match
     if (passwordForm.new !== passwordForm.confirm) {
-      return setPasswordError("New passwords don't match");
+      throw new Error("New passwords don't match");
     }
     
     if (passwordForm.new.length < 6) {
-      return setError("Password must be at least 6 characters");
+      throw new Error("Password must be at least 6 characters");
+    }
+
+    const response = await API.put('/api/auth/me/password', {
+      currentPassword: passwordForm.current,
+      newPassword: passwordForm.new
+    });
+    
+    setPasswordSuccess('Password updated successfully');
+    
+    // Update user in state if needed
+    if (response.data.user) {
+      setUser(response.data.user);
     }
     
-    try {
-      await API.put('/api/auth/me/password', {
-        currentPassword: passwordForm.current,
-        newPassword: passwordForm.new
-      });
-      
-      setPasswordSuccess('Password updated successfully');
+    // Clear form and close modal after 1.5 seconds
+    setTimeout(() => {
       setPasswordForm({ current: '', new: '', confirm: '' });
-      setTimeout(() => setShowPasswordModal(false), 1500);
-    } catch (err) {
-      setPasswordError(err.response?.data?.message || "Failed to update password");
-    }
-  };
+      setShowPasswordModal(false);
+    }, 1500);
+  } catch (err) {
+    setPasswordError(err.response?.data?.message || err.message || "Failed to update password");
+  }
+};
 
   const handleDeactivate = async () => {
     if (window.confirm("Are you sure you want to deactivate your account? This cannot be undone.")) {
@@ -204,8 +213,8 @@ const handleProfileUpdate = async (e) => {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0"></div>
-          
-          <div className="flex-1 max-w-xl mx-4 md:ml-12">
+
+          <div className="flex-1 max-w-2xl mx-32 md:ml-12">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-zinc-300" />

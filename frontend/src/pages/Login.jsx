@@ -36,17 +36,43 @@ export default function Login() {
   };
 
   const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post("http://localhost:5000/api/auth/forgot-password", {
-        email: resetEmail
-      });
+  e.preventDefault();
+  setErrMsg('');
+  
+  try {
+    const response = await axios.post("http://localhost:5000/api/auth/forgot-password", {
+      email: resetEmail
+    }, {
+      timeout: 10000 // 10 second timeout
+    });
+
+    if (response.data.message) {
+      setErrMsg(response.data.message);
       setResetStep(2);
-      setErrMsg("");
-    } catch (error) {
-      setErrMsg(error.response?.data?.message || "Failed to send reset code");
+    } else {
+      setErrMsg('Password reset initiated. Check your email.');
+      setResetStep(2);
     }
-  };
+  } catch (error) {
+    let errorMessage = 'Failed to send reset code';
+    
+    if (error.response) {
+      // Server responded with error status
+      errorMessage = error.response.data.message || errorMessage;
+    } else if (error.request) {
+      // Request was made but no response
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      // Other errors
+      errorMessage = error.message || errorMessage;
+    }
+    
+    setErrMsg(errorMessage);
+    console.error('Forgot password error:', error);
+  }
+};
+
+      
 
   const handleVerifyCode = async (e) => {
     e.preventDefault();
@@ -94,11 +120,15 @@ export default function Login() {
           Sign in to manage your tasks and lists
         </p>
 
-        {errMsg && (
-          <div className={`bg-${errMsg.includes("success") ? "green" : "red"}-100 text-${errMsg.includes("success") ? "green" : "red"}-700 p-2 rounded mb-4 text-sm text-center`}>
-            {errMsg}
-          </div>
-        )}
+      {errMsg && (
+        <div className={`p-3 rounded mb-4 text-sm text-center ${
+          errMsg.includes("successfully") || errMsg.includes("sent") ? 
+          "bg-green-100 text-green-700" : 
+          "bg-red-100 text-red-700"
+        }`}>
+          {errMsg}
+        </div>
+      )}
 
         {!showForgotPassword ? (
           <>
