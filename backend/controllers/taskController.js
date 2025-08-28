@@ -88,6 +88,36 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
+// Get upcoming tasks within next N days (default 3)
+exports.getUpcomingTasks = async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 3;
+    const now = new Date();
+    const end = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+    const tasks = await Task.find({
+      user: req.user._id,
+      completed: false,
+      dueDate: { $gte: now, $lte: end }
+    }).sort({ dueDate: 1 });
+
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+// Get single task by id
+exports.getTaskById = async (req, res) => {
+  try {
+    const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 exports.searchTasks = async (req, res) => {
   try {
     const query = req.query.q;

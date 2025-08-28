@@ -33,11 +33,7 @@ list: {
   type: String,
   default: null,
 },
-// list: {
-//   type: mongoose.Schema.Types.ObjectId,
-//   ref: 'List',
-//   default: null
-// }
+
 
 
 }, { timestamps: true });
