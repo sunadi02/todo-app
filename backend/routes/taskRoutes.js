@@ -7,6 +7,7 @@ const {
   deleteTask,
   toggleImportant,
   getUpcomingTasks,
+  getTasksByRange,
   getTaskById,
   searchTasks
 } = require('../controllers/taskController');
@@ -19,13 +20,9 @@ router.put('/:id', protect, updateTask);
 router.delete('/:id', protect, deleteTask);
 router.patch('/important/:id', protect, toggleImportant);
 router.get('/upcoming', protect, getUpcomingTasks);
-router.get('/:id', protect, getTaskById);
-router.post('/api/lists', async (req, res) => {
-  const { title } = req.body;
-  const newList = await List.create({ title }); 
-  res.json(newList);
-});
+router.get('/range', protect, getTasksByRange);
 router.get('/search', protect, searchTasks);
+router.get('/:id', protect, getTaskById);
 
 
 

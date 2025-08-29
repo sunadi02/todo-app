@@ -45,14 +45,18 @@ exports.createTask = async (req, res) => {
 
 // Update a task
 exports.updateTask = async (req, res) => {
-  const { title, completed, description, isImportant, priority, dueDate } = req.body;
-
   try {
+    const update = {};
+    ['title', 'completed', 'description', 'isImportant', 'priority', 'dueDate', 'steps', 'list'].forEach(key => {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    });
+
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      { title, completed, description, isImportant, priority, dueDate },
+      update,
       { new: true }
     );
+
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
   } catch (err) {
@@ -89,16 +93,24 @@ exports.deleteTask = async (req, res) => {
 };
 
 // Get upcoming tasks within next N days (default 3)
+// Uses local day boundaries: start of today (00:00) up to end of (today + days) (23:59:59.999)
 exports.getUpcomingTasks = async (req, res) => {
   try {
     const days = parseInt(req.query.days, 10) || 3;
-    const now = new Date();
-    const end = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+    // start = today at local 00:00:00
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    // end = (today + days) at local 23:59:59.999
+    const end = new Date(start);
+    end.setDate(end.getDate() + days);
+    end.setHours(23, 59, 59, 999);
 
     const tasks = await Task.find({
       user: req.user._id,
       completed: false,
-      dueDate: { $gte: now, $lte: end }
+      dueDate: { $gte: start, $lte: end }
     }).sort({ dueDate: 1 });
 
     res.json(tasks);
@@ -132,6 +144,30 @@ exports.searchTasks = async (req, res) => {
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: 'Search failed', error: err.message });
+  }
+};
+
+// Get tasks between a start and end date (inclusive)
+exports.getTasksByRange = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    if (!start || !end) return res.status(400).json({ message: 'start and end query parameters are required' });
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    // ensure endDate includes the full day when only a date is supplied
+    if (endDate.getHours() === 0 && endDate.getMinutes() === 0 && endDate.getSeconds() === 0) {
+      endDate.setHours(23, 59, 59, 999);
+    }
+
+    const tasks = await Task.find({
+      user: req.user._id,
+      dueDate: { $gte: startDate, $lte: endDate }
+    }).sort({ dueDate: 1 });
+
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 

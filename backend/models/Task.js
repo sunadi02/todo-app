@@ -23,16 +23,16 @@ const taskSchema = new mongoose.Schema({
   default: false,
   },
   description: String,
-  dueDate: Date,
-  priority: { type: String, enum: ["Low", "Medium", "High"], default: "Low" },
+  priority: { type: String, enum: ["Low", "Medium", "High"], default: "Medium" },
   steps: [{
-  text: String,
-  done: Boolean,
-}],
-list: {
-  type: String,
-  default: null,
-},
+    text: String,
+    done: { type: Boolean, default: false }
+  }],
+  list: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'List',
+    default: null
+  },
 
 
 
