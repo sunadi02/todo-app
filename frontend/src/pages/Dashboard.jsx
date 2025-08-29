@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import TopNavbar from '../components/TopNavbar';
 import TaskDetailPanel from '../components/TaskDetailPanel';
-import { Menu, Check, Star } from "lucide-react";
+import { Menu, Check, Star, Calendar as CalendarIcon } from "lucide-react";
 import API from "../api";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
@@ -79,6 +79,25 @@ const Dashboard = () => {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
+  // refresh when tasks updated elsewhere (calendar, create, delete)
+  useEffect(() => {
+    const handler = () => fetchTasks();
+    window.addEventListener('tasks-updated', handler);
+    return () => window.removeEventListener('tasks-updated', handler);
+  }, [fetchTasks]);
+
+  // Listen for global open-task events from notifications
+  useEffect(() => {
+    const handler = (e) => {
+      if (e?.detail) {
+        setSelectedTask(e.detail);
+        setShowPanel(true);
+      }
+    };
+    window.addEventListener('open-task', handler);
+    return () => window.removeEventListener('open-task', handler);
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -119,8 +138,10 @@ const Dashboard = () => {
         priority: "Medium",
         list: null
       });
-      setTasks([res.data, ...tasks]);
+  setTasks(prev => [res.data, ...prev]);
       setNewTask("");
+  // notify rest of app (notifications) that tasks changed
+  window.dispatchEvent(new Event('tasks-updated'));
     } catch (err) {
       console.error("Error adding task", err);
     }
@@ -131,6 +152,7 @@ const Dashboard = () => {
       const res = await API.patch(`/api/tasks/important/${id}`);
       const updated = res.data;
       setTasks(prev => prev.map(task => task._id === id ? updated : task));
+  window.dispatchEvent(new Event('tasks-updated'));
     } catch (err) {
       console.error("Error toggling important", err);
     }
@@ -155,6 +177,7 @@ const Dashboard = () => {
           return 0;
         });
       });
+  window.dispatchEvent(new Event('tasks-updated'));
     } catch (err) {
       console.error("Error toggling complete", err);
     }
@@ -163,10 +186,11 @@ const Dashboard = () => {
   const handleDeleteTask = async (id) => {
     try {
       await API.delete(`/api/tasks/${id}`);
-      setTasks(tasks.filter(task => task._id !== id));
+  setTasks(prev => prev.filter(task => task._id !== id));
       if (selectedTask && selectedTask._id === id) {
         setShowPanel(false);
       }
+  window.dispatchEvent(new Event('tasks-updated'));
     } catch (err) {
       console.error("Error deleting task", err);
     }
@@ -230,7 +254,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 ">
       {/* Mobile Sidebar Toggle Button */}
       {isMobile && (
         <button 
@@ -243,9 +267,9 @@ const Dashboard = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full z-30 transition-all duration-300 bg-white shadow-lg sidebar-container
-          ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 overflow-hidden'} 
-          md:relative md:translate-x-0 md:w-64 md:overflow-visible`}
+        className={`fixed top-0 left-0 h-full z-30  duration-300 bg-white shadow-lg sidebar-container
+          ${isSidebarOpen ? ' w-64' : '-translate-x-0 w-0 overflow-hidden'} 
+          md:relative  md:w-64 md:overflow-visible`}
       >
         <Sidebar
           filter={filter}
@@ -266,7 +290,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+  <div className={`mx-7 flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}> 
         <TopNavbar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -275,33 +299,38 @@ const Dashboard = () => {
           setUser={setUser}
         />
 
-        <main className="flex-1 px-4 md:px-6 lg:px-8 pt-16 md:pt-20 pb-20 md:pb-0">
+  <main className="flex-1 px-2 md:px-4 lg:px-6 pt-16 md:pt-20 pb-20 md:pb-0">
           
           <section className="mb-6 md:mb-8 mt-9 md:w-full mx-auto">
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-slate-700/90 rounded-xl shadow px-4 py-3 sm:px-6 sm:py-5">
               <div className="flex-shrink-0">
                 <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-                  <circle cx="50" cy="50" r="48" fill="#64748b" />
-                  <path d="M30 52l14 14 26-26" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="50" cy="50" r="48" fill="#5faeb6" />
+                  <path d="M30 52l14 14 26-26" stroke="#3f6184" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <div className="text-center sm:text-left">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1">
-                  Welcome back, <span className="text-blue-300">{user?.name || 'Loading...'}!</span>
-                </h2>
-                <p className="text-slate-200 text-xs sm:text-sm md:text-base">
-                  Quick add, mark, and organize your tasks.
-                </p>
-              </div>
+                    <div className="text-center sm:text-left">
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1">
+                              Welcome back, <span className="text-[#5faeb6]">{user?.name || 'Loading...'}!</span>
+                            </h2>
+                            <p className="text-slate-200 text-xs sm:text-sm md:text-base">
+                              Quick add, mark, and organize your tasks.
+                            </p>
+                          </div>
             </div>
           </section>
 
           
           <div className="flex justify-between items-center mb-6 md:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold bg-white/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
-              Today's Tasks
-            </h1>
-          </div>
+                <h1 className="text-xl sm:text-2xl font-bold bg-white/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
+                  Today's Tasks
+                </h1>
+                <div>
+                  <button onClick={() => navigate('/calendar')} className="mr-5 ml-2 mt-1 bg-white/90 px-3 py-2 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-2" aria-label="Open calendar">
+                    <CalendarIcon size={30} className="text-[#5faeb6]" /> 
+                  </button>
+                </div>
+              </div>
 
           
           <div className="flex flex-wrap gap-2 md:gap-4 mb-6 md:mb-8">
@@ -310,7 +339,7 @@ const Dashboard = () => {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow transition-all duration-200 text-sm sm:text-base
-                  ${filter === f ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+                  ${filter === f ? 'bg-[#5faeb6] text-white' : 'bg-white/90 text-[#3f6184] hover:bg-[#5faeb6]/10'}`}
               >
                 {f === 'all' && <Menu size={16} className="sm:size-[18px]" />}
                 {f === 'important' && <Star size={16} className="sm:size-[18px]" />}
@@ -327,11 +356,12 @@ const Dashboard = () => {
               placeholder="Add a new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="flex-1 border border-slate-200 rounded-xl px-4 py-2 sm:px-5 sm:py-3 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-base sm:text-lg"
+              className="flex-1 border border-[#3f6184] rounded-xl px-4 py-2 sm:px-5 sm:py-3 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg text-[#323a45] placeholder-[#778899]"
+              aria-label="Add new task"
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl shadow hover:bg-blue-700 transition-colors font-semibold text-sm sm:text-base"
+              className="bg-[#5faeb6] text-[#f6f7f9] px-4 py-2 sm:px-6 sm:py-3 rounded-xl shadow hover:bg-[#3f6184] transition-colors font-semibold text-sm sm:text-base"
               disabled={isUploading}
             >
               {isUploading ? 'Adding...' : 'Add Task'}
@@ -339,12 +369,12 @@ const Dashboard = () => {
           </form>
 
           
-          <div className="grid grid-cols-1 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 mb-9">
             {filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`group p-4 md:p-5 bg-white rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
-                  ${task.completed ? 'border-slate-500' : 'border-blue-200'}
+                className={`group p-4 md:p-5 bg-[#f6f7f9] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
+                  ${task.completed ? 'border-[#778899]' : 'border-[#5faeb6]'}
                   hover:shadow-lg`}
               >
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -366,7 +396,7 @@ const Dashboard = () => {
                   <span
                     onClick={() => handleSelectTask(task)}
                     className={`cursor-pointer text-base md:text-lg font-medium flex-1
-                      ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 group-hover:text-blue-600'}`}
+                      ${task.completed ? 'line-through text-[#778899]' : 'text-[#323a45] group-hover:text-[#3f6184]'}`}
                   >
                     {task.title}
                   </span>
@@ -375,7 +405,8 @@ const Dashboard = () => {
                 <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
                   <button 
                     onClick={() => handleSelectTask(task)}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm text-[#3f6184] hover:text-[#5faeb6]"
+                    aria-label="Task details"
                   >
                     Details
                   </button>
@@ -389,8 +420,7 @@ const Dashboard = () => {
         {showPanel && selectedTask && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-end">
             <div 
-              className="bg-white w-full max-w-md h-full overflow-y-auto animate-slide-in"
-              style={{ width: 'min(90vw, 400px)' }}
+              
             >
               <TaskDetailPanel
                 selectedTask={selectedTask}

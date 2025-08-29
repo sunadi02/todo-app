@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import TopNavbar from '../components/TopNavbar';
 import API from "../api";
-import { Star, Check, Menu,  } from "lucide-react";
+import { Star, Check, Menu, Calendar as CalendarIcon } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import TaskDetailPanel from '../components/TaskDetailPanel';
 import { useNavigate } from "react-router-dom";
 
 const ListPage = () => {
   const { listTitle } = useParams();
+  const decodedTitle = decodeURIComponent(listTitle || '');
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState('all');
+  const [currentListId, setCurrentListId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
   const [lists, setLists] = useState([]);
@@ -71,15 +73,42 @@ const ListPage = () => {
 
   
   useEffect(() => {
+    const fetchLists = async () => {
+      try {
+        const res = await API.get('/api/lists');
+        setLists(res.data);
+
+        // try to resolve the current list id from the title param
+        if (decodedTitle) {
+          const found = res.data.find(l => l.title === decodedTitle);
+          if (found) setCurrentListId(found._id);
+        }
+      } catch (err) {
+        console.error('Error fetching lists', err);
+      }
+    };
+    fetchLists();
+  }, [decodedTitle]);
+
+  useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await API.get("/api/tasks");
-        let filtered = res.data.filter((task) => task.list === listTitle);
-        
-        if (filter === "important") filtered = filtered.filter(task => task.isImportant);
-        if (filter === "completed") filtered = filtered.filter(task => task.completed);
+        const res = await API.get('/api/tasks');
+        const all = res.data;
 
-        
+        const filtered = all.filter((task) => {
+          if (!currentListId) return false;
+          const tList = task.list;
+          if (!tList) return false;
+          if (typeof tList === 'string') return tList === currentListId;
+          if (typeof tList === 'object') return tList._id === currentListId || tList.title === decodedTitle;
+          return false;
+        }).filter(task => {
+          if (filter === 'important') return task.isImportant;
+          if (filter === 'completed') return task.completed;
+          return true;
+        });
+
         filtered.sort((a, b) => {
           if (a.completed && !b.completed) return 1;
           if (!a.completed && b.completed) return -1;
@@ -89,25 +118,15 @@ const ListPage = () => {
 
         setTasks(filtered);
       } catch (err) {
-        console.error("Error loading tasks", err);
+        console.error('Error loading tasks', err);
       }
     };
 
-    fetchTasks();
-  }, [listTitle, filter]);
+    if (currentListId) fetchTasks();
+  }, [currentListId, filter, decodedTitle]);
 
   
-  useEffect(() => {
-    const fetchLists = async () => {
-      try {
-        const res = await API.get('/api/lists');
-        setLists(res.data);
-      } catch (err) {
-        console.error("Error fetching lists", err);
-      }
-    };
-    fetchLists();
-  }, []);
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -120,7 +139,7 @@ const ListPage = () => {
     try {
       const res = await API.post("/api/tasks", {
         title: newTask,
-        list: listTitle,
+  list: currentListId || null,
         steps: [],
         completed: false,
         isImportant: false,
@@ -216,12 +235,13 @@ const ListPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100">
+  <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
       {/* Mobile Sidebar Toggle Button */}
       {isMobile && (
               <button 
                 onClick={toggleSidebar}
                 className="fixed top-4 left-4 z-40 p-2 rounded-md bg-slate-700 text-white sidebar-toggle-button"
+                aria-label="Toggle sidebar"
               >
                 <Menu size={24} />
               </button>
@@ -252,7 +272,7 @@ const ListPage = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+      <div className={`mx-5 flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
         <TopNavbar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -264,12 +284,20 @@ const ListPage = () => {
         <main className="flex-1 px-4 md:px-6 lg:px-8 pt-32 md:pt-32 pb-20 md:pb-0">
           {/* Header */}
           <div className="flex justify-between items-center mb-6 md:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3 bg-white/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
-              <span className="text-slate-800">{decodeURIComponent(listTitle)}</span>
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-3 bg-[#f6f7f9]/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
+              <span className="text-[#323a45]">{decodeURIComponent(listTitle)}</span>
             </h1>
-            <Link to="/Dashboard" className="text-blue-700 hover:underline font-medium text-sm md:text-base">
-              ← Back to Dashboard
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/Dashboard" className="text-[#3f6184] hover:underline font-medium text-sm md:text-base">
+                ← Back to Dashboard
+              </Link>
+              
+            </div>
+            <div>
+              <button onClick={() => navigate('/calendar')} className="mr-5 ml-2 mt-1 bg-white/90 px-3 py-2 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-2" aria-label="Open calendar">
+                <CalendarIcon size={30} className="text-[#5faeb6]" />
+              </button>
+            </div>
           </div>
 
           {/* Filter Buttons */}
@@ -279,7 +307,8 @@ const ListPage = () => {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow transition-all duration-200 text-sm sm:text-base
-                  ${filter === f ? 'bg-blue-600 text-white' : 'bg-white/90 text-blue-700 hover:bg-blue-50'}`}
+                  ${filter === f ? 'bg-[#5faeb6] text-[#f6f7f9]' : 'bg-[#f6f7f9]/90 text-[#3f6184] hover:bg-[#5faeb6]/10'}`}
+                aria-label={`Filter: ${f}`}
               >
                 {f === 'all' && <Menu size={16} className="sm:size-[18px]" />}
                 {f === 'important' && <Star size={16} className="sm:size-[18px]" />}
@@ -288,6 +317,7 @@ const ListPage = () => {
               </button>
             ))}
           </div>
+          
 
           {/* Add Task */}
           <form className="mb-6 md:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4" onSubmit={handleAddTask}>
@@ -296,23 +326,24 @@ const ListPage = () => {
               placeholder="Add a new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="flex-1 border border-slate-200 rounded-xl px-4 py-2 sm:px-5 sm:py-3 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-base sm:text-lg"
+              className="flex-1 border border-[#3f6184] rounded-xl px-4 py-2 sm:px-5 sm:py-3 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg text-[#323a45] placeholder-[#778899]"
+              aria-label="Add new task"
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl shadow hover:bg-blue-700 transition-colors font-semibold text-sm sm:text-base"
+              className="bg-[#5faeb6] text-[#f6f7f9] px-4 py-2 sm:px-6 sm:py-3 rounded-xl shadow hover:bg-[#3f6184] transition-colors font-semibold text-sm sm:text-base"
             >
               Add Task
             </button>
           </form>
 
           {/* Task List */}
-          <div className="grid grid-cols-1 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 mb-9">
             {tasks.map((task) => (
               <div
                 key={task._id}
-                className={`group p-4 md:p-5 bg-white rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
-                  ${task.completed ? 'border-slate-500' : 'border-blue-200'}
+                className={`group p-4 md:p-5 bg-[#f6f7f9] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
+                  ${task.completed ? 'border-[#778899]' : 'border-[#5faeb6]'}
                   hover:shadow-lg`}
               >
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -337,7 +368,7 @@ const ListPage = () => {
                       setShowPanel(true);
                     }}
                     className={`cursor-pointer text-base md:text-lg font-medium flex-1
-                      ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 group-hover:text-blue-600'}`}
+                      ${task.completed ? 'line-through text-[#778899]' : 'text-[#323a45] group-hover:text-[#3f6184]'}`}
                   >
                     {task.title}
                   </span>
@@ -349,7 +380,8 @@ const ListPage = () => {
                       setSelectedTask(task);
                       setShowPanel(true);
                     }}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm text-[#3f6184] hover:text-[#5faeb6]"
+                    aria-label="Task details"
                   >
                     Details
                   </button>
@@ -363,8 +395,6 @@ const ListPage = () => {
         {showPanel && selectedTask && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-end">
             <div 
-              className="bg-white w-full max-w-md h-full overflow-y-auto animate-slide-in"
-              style={{ width: 'min(90vw, 400px)' }}
             >
               <TaskDetailPanel
                 selectedTask={selectedTask}

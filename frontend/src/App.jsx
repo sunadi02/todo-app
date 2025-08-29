@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ListPage from './pages/ListPage';
+import Calendar from './pages/Calendar';
 import TopNavbar from "./components/TopNavbar";
 import { useState, useEffect } from "react";
 import API from './api';
@@ -34,6 +35,10 @@ export default function App() {
         <Route path="/list/:listTitle" element={<>
           <TopNavbar user={user} setUser={setUser} />
           <ListPage user={user} />
+        </>} />
+        <Route path="/calendar" element={<>
+          <TopNavbar user={user} setUser={setUser} />
+          <Calendar user={user} setUser={setUser} />
         </>} />
       </Routes>
     </BrowserRouter>

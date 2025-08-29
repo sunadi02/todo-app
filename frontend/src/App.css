@@ -7,6 +7,19 @@
   pointer-events: none;
 }
 
+/* Target specific Tailwind classes used in sidebar */
+.sidebar-container .text-sm {
+  font-size: 0.875rem !important;
+}
+
+.sidebar-container .text-base {
+  font-size: 1rem !important;
+}
+
+.sidebar-container .text-lg {
+  font-size: 1.125rem !important;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

@@ -291,7 +291,7 @@ const handleProfileUpdate = async (e) => {
 
                     {showNotifications && (
                       <div className="absolute right-0 top-10 mt-2 w-80 bg-[#f6f7f9] rounded-md shadow-lg py-2 z-50" role="menu" aria-label="Notifications">
-                        <div className="px-3 py-2 text-sm text-[#323a45] font-semibold">Upcoming tasks</div>
+                        <div className="px-3 py-2 text-lg text-[#323a45] font-semibold">Upcoming tasks</div>
                         <div className="max-h-48 overflow-auto">
                           {notifications.length === 0 ? (
                             <div className="px-3 py-2 text-sm text-[#778899]">No upcoming tasks</div>

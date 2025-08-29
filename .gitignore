@@ -23,3 +23,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Backend uploads (user data)
+/backend/uploads/
+
+# Frontend build directory
+/frontend/build/
+
+# IDE and OS
+.vscode/
+.idea/
+Thumbs.db
+

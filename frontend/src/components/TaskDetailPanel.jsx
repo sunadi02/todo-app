@@ -55,13 +55,13 @@ const TaskDetailPanel = ({
   return (
     <div
       ref={panelRef}
-  className="right-panel bg-[#3f6184]/20 border-l border-[#778899] shadow-lg p-4 md:p-6 fixed right-0 top-0 h-full overflow-y-auto z-50 backdrop-blur"
+  className="right-panel bg-[#f6f7f9] border-l-4 border-[#5faeb6] shadow-lg p-4 md:p-6 fixed right-0 top-0 h-full overflow-y-auto z-50"
       style={{ width: responsiveWidth }}
     >
       
-      {window.innerWidth >= 768 && (
+        {window.innerWidth >= 768 && (
         <div
-          className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50 hover:bg-blue-300/50"
+          className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50 hover:bg-[#5faeb6]/50"
           onMouseDown={handleMouseDown}
         />
       )}
@@ -69,10 +69,10 @@ const TaskDetailPanel = ({
       
       <div className="pl-2">
         <div className="flex justify-between items-center mb-4 md:mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-[#f6f7f9]">Task Details</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-[#323a45]">Task Details</h2>
           <button
             onClick={() => setShowPanel(false)}
-            className="text-slate-100 hover:text-red-500 text-xl font-bold"
+            className="text-[#323a45] hover:text-red-600 text-xl font-bold"
             title="Close"
           >
             ✖
@@ -124,7 +124,7 @@ const TaskDetailPanel = ({
 
           
           <div>
-            <label className="text-l md:text-xl font-semibold mb-1 block text-[#f6f7f9]">Description</label>
+            <label className="text-sm md:text-lg font-semibold mb-1 block text-[#323a45]">Description</label>
             <textarea
               className="w-full border border-[#778899] rounded-lg p-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base md:text-lg text-[#323a45]"
               aria-label="Description"
@@ -140,7 +140,7 @@ const TaskDetailPanel = ({
 
           {/*priority */}
           <div>
-            <label className="text-l md:text-xl font-semibold mb-1 block text-[#f6f7f9]">Priority</label>
+            <label className="text-sm md:text-lg font-semibold mb-1 block text-[#323a45]">Priority</label>
             <select
               value={selectedTask.priority}
               onChange={(e) => updateTaskField("priority", e.target.value)}
@@ -155,7 +155,7 @@ const TaskDetailPanel = ({
 
           {/*due date */}
           <div>
-            <label className="text-l md:text-xl font-semibold mb-1 block text-[#f6f7f9]">Due Date</label>
+            <label className="text-sm md:text-lg font-semibold mb-1 block text-[#323a45]">Due Date</label>
             <input
               type="date"
               min={new Date().toISOString().substr(0,10)}
@@ -174,7 +174,7 @@ const TaskDetailPanel = ({
 
           {/* steps */}
           <div className="steps-container">
-            <label className="text-l md:text-xl font-semibold mb-1 block text-[#f6f7f9] ">Steps</label>
+            <label className="text-sm md:text-lg font-semibold mb-1 block text-[#323a45] ">Steps</label>
             <ul className="space-y-2">
               {(selectedTask.steps || []).map((step, i) => (
                 <li key={i} className="flex items-center gap-2">
@@ -220,14 +220,14 @@ const TaskDetailPanel = ({
 
                   <button
                     type="button"
-                    className="text-red-500 hover:text-red-700 text-base md:text-lg"
+                    className="text-red-500 hover:text-red-700 text-xl md:text-xl"
                     onClick={() => {
                       const newSteps = selectedTask.steps.filter((_, idx) => idx !== i);
                       setSelectedTask({ ...selectedTask, steps: newSteps });
                       updateTaskField("steps", newSteps);
                     }}
                   >
-                    ❌
+                    x
                   </button>
                 </li>
               ))}
