@@ -351,8 +351,8 @@ const ListPage = () => {
                     <span className="relative">
                       <Star
                         size={20}
-                        className={`cursor-pointer transition-colors duration-150
-                          ${task.isImportant ? "text-yellow-400" : "text-slate-300"}
+                        className={`hover:text-yellow-600 cursor-pointer transition-colors duration-150
+                          ${task.isImportant ? "text-yellow-500 " : "text-slate-300"}
                         `}
                         onClick={() => toggleImportant(task._id)}
                         onMouseEnter={e => e.currentTarget.classList.add('text-yellow-300')}

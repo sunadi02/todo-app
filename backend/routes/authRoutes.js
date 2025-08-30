@@ -7,6 +7,8 @@ const { generateResetCode, sendResetEmail } = require('../services/emailService'
 const multer = require('multer');
 const path = require('path');
 
+const PASSWORD_RESET_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -54,8 +56,8 @@ router.post('/forgot-password', async (req, res) => {
     const resetCode = generateResetCode();
     console.log('Generated reset code for', email, ':', resetCode);
 
-    user.resetPasswordToken = resetCode;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  user.resetPasswordToken = resetCode;
+  user.resetPasswordExpires = Date.now() + PASSWORD_RESET_EXPIRY_MS; // 10 minutes
     
     await user.save();
     console.log('Reset token saved for user:', user._id);
@@ -150,14 +152,23 @@ router.put('/me', protect, async (req, res) => {
     }
 
     await user.save();
-    
+    res.status(200).json({ message: 'Profile updated successfully', user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar
+    }});
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
+});
 
+// Proper account deletion route
+router.delete('/me', protect, async (req, res) => {
   try {
+    // Soft delete could be implemented; for now perform hard delete
     await User.findByIdAndDelete(req.user._id);
-    res.status(200).json({ message: 'Account deactivated successfully' });
+    res.status(200).json({ message: 'Account deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

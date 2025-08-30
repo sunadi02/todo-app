@@ -118,7 +118,7 @@ const TaskDetailPanel = ({
               onClick={() =>
                 updateTaskField("isImportant", !selectedTask.isImportant)
               }
-              title="Toggle Important"
+              title={selectedTask.isImportant ? "Unmark as important" : "Mark this task as important"}
             />
           </div>
 

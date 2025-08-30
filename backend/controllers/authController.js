@@ -4,16 +4,23 @@ const jwt = require('jsonwebtoken');
 
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  let { name, email, password } = req.body;
+
+  // Basic validation
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Name, email and password are required' });
+  }
+
+  // Normalize email
+  email = email.trim().toLowerCase();
 
   try {
     
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'Email already registered' });
+  const userExists = await User.findOne({ email });
+  if (userExists) return res.status(400).json({ message: 'Email already registered' });
 
-    
   // User schema handles password hashing in pre-save middleware
-  const newUser = new User({ name, email, password });
+  const newUser = new User({ name: name.trim(), email, password });
   await newUser.save();
 
     
@@ -27,6 +34,10 @@ exports.registerUser = async (req, res) => {
       token
     });
   } catch (err) {
+    // Handle duplicate key race (unique index)
+    if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

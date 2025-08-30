@@ -168,11 +168,8 @@ const handleProfileUpdate = async (e) => {
         formData.append('avatar', profileForm.avatarFile);
       }
 
-      const response = await API.put('/api/auth/me/profile', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+  // Let axios/browser set the Content-Type (including multipart boundary)
+  const response = await API.put('/api/auth/me/profile', formData);
     
       const updatedUser = response.data.user;
       setUser(updatedUser);  //updates the state in Dashboard
@@ -299,7 +296,11 @@ const handleProfileUpdate = async (e) => {
                             notifications.map((t) => (
                               <button
                                 key={t._id}
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  // prevent clicks inside notifications from bubbling to parent toggle
+                                  e.stopPropagation();
+                                  // ensure profile dropdown is closed
+                                  setShowDropdown(false);
                                   try {
                                     const res = await API.get(`/api/tasks/${t._id}`);
                                     // emit a global event to open task detail panel with data

@@ -121,6 +121,24 @@ const Calendar = ({ user, setUser }) => {
     return () => window.removeEventListener('open-task', handler);
   }, [current]);
 
+  useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (isMobile && isSidebarOpen) {
+          const sidebar = document.querySelector('.sidebar-container');
+          const toggleButton = document.querySelector('.sidebar-toggle-button');
+          
+          if (sidebar && !sidebar.contains(event.target)) {
+            if (!toggleButton || !toggleButton.contains(event.target)) {
+              setIsSidebarOpen(false);
+            }
+          }
+        }
+      };
+  
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMobile, isSidebarOpen]);
+  
   const handleSelectTask = async (id) => {
     try {
       const res = await API.get(`/api/tasks/${id}`);
@@ -190,12 +208,12 @@ const Calendar = ({ user, setUser }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-slate-200 to-teal-50">
+  <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-slate-200 to-teal-50">
       {/* Mobile Sidebar Toggle Button */}
       {isMobile && (
         <button
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-40 p-2 rounded-md bg-slate-700 text-white sidebar-toggle-button"
+          className="text-2xl fixed top-4 left-4 z-40 p-2 px-4 rounded-md bg-slate-700 text-white sidebar-toggle-button"
           aria-label="Toggle sidebar"
         >
           {/* simple menu icon */}
@@ -234,30 +252,30 @@ const Calendar = ({ user, setUser }) => {
   <main className="flex-1 p-4 pt-16 md:pt-20 max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-semibold">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
+              <h2 className="text-2xl font-semibold text-[#2f9ea5]">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
             </div>
             <div className="flex gap-2 items-center">
-              <button onClick={prevMonth} className="px-3 py-1 bg-white hover:bg-teal-50 rounded shadow">Prev</button>
-              <button onClick={nextMonth} className="px-3 py-1 bg-white rounded shadow hover:bg-teal-50">Next</button>
-              <button onClick={() => setExpanded(e => !e)} className=" hover:bg-teal-50 px-3 py-1 bg-white rounded shadow">
+              <button onClick={prevMonth} className="px-3 py-1 bg-white hover:bg-teal-50 rounded shadow text-[#2f9ea5]">Prev</button>
+              <button onClick={nextMonth} className="px-3 py-1 bg-white rounded shadow hover:bg-teal-50 text-[#2f9ea5]">Next</button>
+              <button onClick={() => setExpanded(e => !e)} className=" hover:bg-teal-50 px-3 py-1 bg-white rounded shadow text-[#2f9ea5]">
                 {expanded ? 'Collapse' : 'Expand'}
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex gap-3">
-              <div className="bg-white rounded px-3 py-2 shadow">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <div className="flex w-full sm:w-auto gap-3 flex-col sm:flex-row">
+              <div className="bg-white rounded px-3 py-2 shadow flex-1 text-center sm:text-left">
                 <div className="text-base text-slate-500">Total this month</div>
                 <div className="text-lg font-bold">{totalTasks}</div>
               </div>
-              <div className="bg-white rounded px-3 py-2 shadow">
+              <div className="bg-white rounded px-3 py-2 shadow  text-center sm:text-left">
                 <div className="text-base text-slate-500">Next due</div>
                 <div className="text-base text-slate-700">{nextTask ? `${nextTask.title} — ${new Date(nextTask.dueDate).toLocaleString()}` : '—'}</div>
               </div>
             </div>
-            <div>
-              <button onClick={() => navigate('/dashboard')} className="px-3 py-2 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
+            <div className="w-full sm:w-auto flex justify-start sm:justify-end">
+              <button onClick={() => navigate('/dashboard')} className="text-base px-3 py-2 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
             </div>
           </div>
 
@@ -281,8 +299,8 @@ const Calendar = ({ user, setUser }) => {
                 >
                   <div className="text-xs text-slate-500">{cell.getDate()}</div>
                   <div className="mt-1 flex-1 overflow-auto">
-                    {items.slice(0,maxItems).map(it => (
-                      <div key={it._id} className="text-base py-0.5 px-1 rounded mb-1 bg-[#f0f9f9] text-slate-700" onClick={(e) => { e.stopPropagation(); handleSelectTask(it._id); }}>
+                      {items.slice(0,maxItems).map(it => (
+                      <div key={it._id} className="text-base py-0.5 px-1 rounded mb-1 bg-[#e6f7f6] text-slate-700" onClick={(e) => { e.stopPropagation(); handleSelectTask(it._id); }}>
                         {it.title}
                       </div>
                     ))}

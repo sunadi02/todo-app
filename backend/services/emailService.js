@@ -30,7 +30,7 @@ exports.sendResetEmail = async (email, code) => {
           <div style="background: #f3f4f6; padding: 10px; border-radius: 5px; font-size: 24px; letter-spacing: 2px; display: inline-block; margin: 10px 0;">
             ${code}
           </div>
-          <p>This code will expire in 1 hour.</p>
+          <p>This code will expire in 10 minutes.</p>
           <p>If you didn't request this, please ignore this email.</p>
         </div>
       `

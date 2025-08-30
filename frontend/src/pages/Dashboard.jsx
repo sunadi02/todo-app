@@ -389,6 +389,7 @@ const Dashboard = () => {
                         onMouseEnter={e => e.currentTarget.classList.add('text-yellow-300')}
                         onMouseLeave={e => e.currentTarget.classList.remove('text-yellow-300')}
                         style={task.isImportant ? { color: '#facc15' } : {}}
+                        
                       />
                     </span>
                     <span className="relative">
