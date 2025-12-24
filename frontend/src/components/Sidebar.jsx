@@ -4,9 +4,9 @@ import { ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2 } from "lucide-reac
 import API from "../api";
 import Todo from "../../src/assets/todo.jpg";
 
-const MIN_WIDTH = 260;
-const MAX_WIDTH = 420;
-const DEFAULT_WIDTH = 350;
+const MIN_WIDTH = 220;
+const MAX_WIDTH = 360;
+const DEFAULT_WIDTH = 280;
 
 const Sidebar = ({
   filter,
@@ -154,21 +154,21 @@ const Sidebar = ({
       )}
 
       
-      <div className="flex items-center gap-3 mb-8 mt-12 ml-4">
+      <div className="flex items-center gap-2 mb-6 mt-10 ml-3">
         <img
           src={Todo}
           alt="TaskFlow Logo"
-          className="h-8 w-8 object-contain"
+          className="h-7 w-7 object-contain"
         />
-        <h1 className="text-2xl font-bold text-[#323a45]">TaskFlow</h1>
+        <h1 className="text-xl font-bold text-[#323a45]">TaskFlow</h1>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto ml-4">
-  <h2 className="text-xl font-bold mb-4 text-[#3f6184]">My Lists</h2>
-  <ul className="space-y-2 text-[#323a45]">
+      <div className="flex-1 overflow-y-auto ml-3">
+        <h2 className="text-base font-bold mb-3 text-[#3f6184]">My Lists</h2>
+        <ul className="space-y-1.5 text-[#323a45]">
           <li
-            className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'all' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
@@ -176,10 +176,10 @@ const Sidebar = ({
               navigate("/dashboard");
             }}
           >
-            <ListTodo size={20} /> All Tasks
+            <ListTodo size={16} /> All Tasks
           </li>
           <li
-            className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'important' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
@@ -187,10 +187,10 @@ const Sidebar = ({
               navigate("/dashboard");
             }}
           >
-            <Star size={20} /> Important
+            <Star size={16} /> Important
           </li>
           <li
-            className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'completed' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
@@ -198,16 +198,15 @@ const Sidebar = ({
               navigate("/dashboard");
             }}
           >
-            <Check size={20} /> Completed
+            <Check size={16} /> Completed
           </li>
 
-          <hr className="border-gray-300 my-4" />
-  <hr className="border-[#778899] my-4" />
+          <hr className="border-[#778899] my-3" />
 
           {lists.map((listName) => (
             <li
               key={listName._id}
-              className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+              className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
                 currentListFilter === listName.title ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
               }`}
               onClick={() => navigate(`/list/${encodeURIComponent(listName.title)}`)}
@@ -217,7 +216,7 @@ const Sidebar = ({
               }}
               aria-label={`List: ${listName.title}`}
             >
-              <ListTodo size={18} /> {listName.title}
+              <ListTodo size={15} /> <span className="truncate">{listName.title}</span>
             </li>
           ))}
 
@@ -236,44 +235,44 @@ const Sidebar = ({
                 onChange={(e) => setNewListTitle(e.target.value)}
                 onBlur={() => setShowNewListInput(false)}
                 autoFocus
-                className="border border-[#3f6184] px-2 py-1 rounded w-full text-[#323a45] bg-[#f6f7f9] placeholder-[#778899]"
+                className="border border-[#3f6184] px-2 py-1 rounded w-full text-sm text-[#323a45] bg-[#f6f7f9] placeholder-[#778899]"
                 placeholder="Enter list name"
                 aria-label="New list name"
               />
             </form>
           ) : (
             <li
-              className="flex items-center gap-2 cursor-pointer hover:text-[#3f6184] hover:bg-[#5faeb6]/20 p-2 rounded mt-4"
+              className="flex items-center gap-1.5 cursor-pointer hover:text-[#3f6184] hover:bg-[#5faeb6]/20 p-1.5 rounded mt-3 text-sm"
               onClick={() => setShowNewListInput(true)}
               aria-label="Add new list"
             >
-              <Plus size={20} /> New List
+              <Plus size={16} /> New List
             </li>
           )}
         </ul>
       </div>
 
       
-      <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col">
+      <div className="mt-3 pt-3 border-t border-gray-200 flex flex-col">
         <div className="mb-2">
           <button
             onClick={() => {
               localStorage.removeItem("token");
               window.location.href = "/";
             }}
-            className="flex items-center gap-2 w-full text-left text-red-500 hover:text-red-700 p-2 rounded hover:bg-[#f6f7f9]"
+            className="flex items-center gap-1.5 w-full text-left text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-[#f6f7f9] text-sm"
             aria-label="Logout"
           >
-            <LogOut size={20} />
+            <LogOut size={16} />
             <span>Logout</span>
           </button>
         </div>
 
         <div className="w-full">
-          <hr className="border-t border-[#e6eef0] my-2" />
+          <hr className="border-t border-[#e6eef0] my-1.5" />
         </div>
 
-        <div className="mt-2 text-xs text-[#778899] ml-1">
+        <div className="mt-1.5 text-xs text-[#778899] ml-1">
           © {new Date().getFullYear()} TaskFlow
         </div>
       </div>

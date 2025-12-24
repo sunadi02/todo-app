@@ -301,67 +301,67 @@ const Dashboard = () => {
 
   <main className="flex-1 px-2 md:px-4 lg:px-6 pt-16 md:pt-20 pb-20 md:pb-0">
           
-          <section className="mb-6 md:mb-8 mt-9 md:w-full mx-auto">
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-slate-700/90 rounded-xl shadow px-4 py-3 sm:px-6 sm:py-5">
+          <section className="mb-4 md:mb-6 mt-6 md:w-full mx-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-slate-700/90 rounded-lg shadow px-3 py-2 sm:px-4 sm:py-3">
               <div className="flex-shrink-0">
-                <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
                   <circle cx="50" cy="50" r="48" fill="#5faeb6" />
                   <path d="M30 52l14 14 26-26" stroke="#3f6184" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-                    <div className="text-center sm:text-left">
-                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1">
-                              Welcome back, <span className="text-[#5faeb6]">{user?.name || 'Loading...'}!</span>
-                            </h2>
-                            <p className="text-slate-200 text-xs sm:text-sm md:text-base">
-                              Quick add, mark, and organize your tasks.
-                            </p>
-                          </div>
-            </div>
-          </section>
-
-          
-          <div className="flex justify-between items-center mb-6 md:mb-8">
-                <h1 className="text-xl sm:text-2xl font-bold bg-white/80 backdrop-blur rounded-xl px-4 py-2 sm:px-6 sm:py-3 shadow">
-                  Today's Tasks
-                </h1>
-                <div>
-                  <button onClick={() => navigate('/calendar')} className="mr-5 ml-2 mt-1 bg-white/90 px-3 py-2 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-2" aria-label="Open calendar">
-                    <CalendarIcon size={30} className="text-[#5faeb6]" /> 
-                  </button>
-                </div>
+              <div className="text-center sm:text-left">
+                <h2 className="text-base sm:text-lg md:text-xl font-bold text-white mb-0.5">
+                  Welcome back, <span className="text-[#5faeb6]">{user?.name || 'Loading...'}!</span>
+                </h2>
+                <p className="text-slate-200 text-xs sm:text-sm">
+                  Quick add, mark, and organize your tasks.
+                </p>
               </div>
+            </div>
+          </section>  
 
           
-          <div className="flex flex-wrap gap-2 md:gap-4 mb-6 md:mb-8">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <h1 className="text-lg sm:text-xl font-bold bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow">
+              Today's Tasks
+            </h1>
+            <div>
+              <button onClick={() => navigate('/calendar')} className="mr-3 ml-2 bg-white/90 px-2 py-1.5 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-1.5" aria-label="Open calendar">
+                <CalendarIcon size={20} className="text-[#5faeb6]" /> 
+              </button>
+            </div>
+          </div>
+
+          
+          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
             {['all', 'important', 'completed'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex items-center gap-1 sm:gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow transition-all duration-200 text-sm sm:text-base
+                className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow transition-all duration-200 text-xs sm:text-sm
                   ${filter === f ? 'bg-[#5faeb6] text-white' : 'bg-white/90 text-[#3f6184] hover:bg-[#5faeb6]/10'}`}
               >
-                {f === 'all' && <Menu size={16} className="sm:size-[18px]" />}
-                {f === 'important' && <Star size={16} className="sm:size-[18px]" />}
-                {f === 'completed' && <Check size={16} className="sm:size-[18px]" />}
+                {f === 'all' && <Menu size={14} />}
+                {f === 'important' && <Star size={14} />}
+                {f === 'completed' && <Check size={14} />}
                 {f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
 
          
-          <form className="mb-6 md:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4" onSubmit={handleAddTask}>
+          <form className="mb-4 md:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-3" onSubmit={handleAddTask}>
             <input
               type="text"
               placeholder="Add a new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="flex-1 border border-[#3f6184] rounded-xl px-4 py-2 sm:px-5 sm:py-3 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg text-[#323a45] placeholder-[#778899]"
+              className="flex-1 border border-[#3f6184] rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm text-[#323a45] placeholder-[#778899]"
               aria-label="Add new task"
             />
             <button
               type="submit"
-              className="bg-[#5faeb6] text-[#f6f7f9] px-4 py-2 sm:px-6 sm:py-3 rounded-xl shadow hover:bg-[#3f6184] transition-colors font-semibold text-sm sm:text-base"
+              className="bg-[#5faeb6] text-[#f6f7f9] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow hover:bg-[#3f6184] transition-colors font-semibold text-sm"
               disabled={isUploading}
             >
               {isUploading ? 'Adding...' : 'Add Task'}
@@ -369,19 +369,19 @@ const Dashboard = () => {
           </form>
 
           
-          <div className="grid grid-cols-1 gap-4 md:gap-6 mb-9">
+          <div className="grid grid-cols-1 gap-3 md:gap-4 mb-6">
             {filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`group p-4 md:p-5 bg-[#f6f7f9] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
+                className={`group p-3 md:p-4 bg-[#f6f7f9] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
                   ${task.completed ? 'border-[#778899]' : 'border-[#5faeb6]'}
                   hover:shadow-lg`}
               >
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-1.5">
                     <span className="relative">
                       <Star
-                        size={20}
+                        size={18}
                         className={`cursor-pointer transition-colors duration-150
                           ${task.isImportant ? "text-yellow-400" : "text-slate-300"}
                         `}
@@ -389,13 +389,12 @@ const Dashboard = () => {
                         onMouseEnter={e => e.currentTarget.classList.add('text-yellow-300')}
                         onMouseLeave={e => e.currentTarget.classList.remove('text-yellow-300')}
                         style={task.isImportant ? { color: '#facc15' } : {}}
-                        
                       />
                     </span>
                     <span className="relative">
                       <div
                         onClick={() => handleToggleComplete(task._id, task.completed)}
-                        className={`w-5 h-5 hover:border-green-500 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-150
+                        className={`w-4 h-4 hover:border-green-500 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-150
                           ${task.completed ? "bg-green-500 border-green-500" : "border-slate-300"}
                         `}
                         onMouseEnter={e => {
@@ -409,24 +408,24 @@ const Dashboard = () => {
                           }
                         }}
                       >
-                        {task.completed && <Check size={14} className="text-white" />}
+                        {task.completed && <Check size={12} className="text-white" />}
                       </div>
                     </span>
                   </div>
                   
                   <span
                     onClick={() => handleSelectTask(task)}
-                    className={`cursor-pointer text-base md:text-lg font-medium flex-1
+                    className={`cursor-pointer text-sm md:text-base font-medium flex-1
                       ${task.completed ? 'line-through text-[#778899]' : 'text-[#323a45] group-hover:text-[#3f6184]'}`}
                   >
                     {task.title}
                   </span>
                 </div>
                 
-                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-4">
+                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-3">
                   <button 
                     onClick={() => handleSelectTask(task)}
-                    className="text-sm text-[#3f6184] hover:text-[#5faeb6]"
+                    className="text-xs text-[#3f6184] hover:text-[#5faeb6]"
                     aria-label="Task details"
                   >
                     Details
