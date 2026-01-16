@@ -44,29 +44,29 @@ export default function Register() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 px-4">
-      <div className="bg-white/95 p-8 rounded-2xl shadow-lg w-full max-w-md border border-slate-200">
-        <div className="flex items-center justify-center mb-6">
-          <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+      <div className="bg-white/95 p-6 rounded-2xl shadow-lg w-full max-w-md border border-slate-200">
+        <div className="flex items-center justify-center mb-4">
+          <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="48" fill="#5faeb6" />
             <path d="M30 52l14 14 26-26" stroke="#3f6184" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h2 className="text-3xl font-bold text-center text-[#323a45] mb-2">
+        <h2 className="text-2xl font-bold text-center text-[#323a45] mb-2">
           Create your <span className="text-[#5faeb6]">TaskFlow</span> account
         </h2>
-        <p className="text-center text-[#3f6184]/80 mb-6 text-sm">
+        <p className="text-center text-[#3f6184]/80 mb-4 text-xs">
           Sign up to start organizing your tasks and lists
         </p>
 
         {errMsg && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center">
+          <div className="bg-red-100 text-red-700 p-2 rounded mb-3 text-xs text-center">
             {errMsg}
           </div>
         )}
 
         <form onSubmit={handleRegister} autoComplete="on">
-          <div className="mb-4">
-            <label htmlFor="register-name" className="block text-sm font-medium text-[#3f6184]">
+          <div className="mb-3">
+            <label htmlFor="register-name" className="block text-xs font-medium text-[#3f6184]">
               Name
             </label>
             <input
@@ -74,15 +74,15 @@ export default function Register() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow text-[#323a45] placeholder-[#778899]"
+              className="mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow text-[#323a45] placeholder-[#778899] text-sm"
               placeholder="Enter your name"
               required
               autoComplete="name"
             />
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="register-email" className="block text-sm font-medium text-[#3f6184]">
+          <div className="mb-3">
+            <label htmlFor="register-email" className="block text-xs font-medium text-[#3f6184]">
               Email
             </label>
             <input
@@ -90,15 +90,15 @@ export default function Register() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow text-[#323a45] placeholder-[#778899]"
+              className="mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow text-[#323a45] placeholder-[#778899] text-sm"
               placeholder="Enter your email"
               required
               autoComplete="username"
             />
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="register-password" className="block text-sm font-medium text-[#3f6184]">
+          <div className="mb-4">
+            <label htmlFor="register-password" className="block text-xs font-medium text-[#3f6184]">
               Password
             </label>
             <div className="relative">
@@ -107,7 +107,7 @@ export default function Register() {
                 type={showPwd ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow pr-10 text-[#323a45] placeholder-[#778899]"
+                className="mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5faeb6] bg-slate-50 shadow pr-10 text-[#323a45] placeholder-[#778899] text-sm"
                 placeholder="Enter your password"
                 required
                 autoComplete="new-password"
@@ -115,7 +115,7 @@ export default function Register() {
               <button
                 type="button"
                 tabIndex={-1}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3f6184]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3f6184]"
                 onClick={() => setShowPwd((v) => !v)}
                 aria-label={showPwd ? "Hide password" : "Show password"}
               >
@@ -126,14 +126,14 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-[#5faeb6] text-[#f6f7f9] py-2 rounded-xl shadow hover:bg-[#3f6184] transition font-semibold disabled:opacity-60"
+            className="w-full bg-[#5faeb6] text-[#f6f7f9] py-1.5 rounded-xl shadow hover:bg-[#3f6184] transition font-semibold disabled:opacity-60 text-sm"
             disabled={loading}
           >
             {loading ? "Registering..." : "Register"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-[#3f6184]">
+        <p className="mt-3 text-center text-xs text-[#3f6184]">
           Already have an account?{" "}
           <Link to="/" className="text-[#3f6184] hover:underline">
             Login here

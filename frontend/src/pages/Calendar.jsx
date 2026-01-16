@@ -249,37 +249,37 @@ const Calendar = ({ user, setUser }) => {
       >
         <TopNavbar user={user} setUser={setUser} navbarHeight="h-16 md:h-20" />
 
-  <main className="flex-1 pr-2 md:pr-3 lg:pr-4 pt-16 md:pt-20 max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+  <main className="flex-1 pr-2 md:pr-3 lg:pr-4 mt-14 pt-16 md:pt-20 max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-xl font-semibold text-[#2f9ea5]">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
+              <h2 className="text-lg font-semibold text-[#2f9ea5]">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
             </div>
             <div className="flex gap-2 items-center">
-              <button onClick={prevMonth} className="px-3 py-1 text-sm bg-white hover:bg-teal-50 rounded shadow text-[#2f9ea5]">Prev</button>
-              <button onClick={nextMonth} className="px-3 py-1 text-sm bg-white rounded shadow hover:bg-teal-50 text-[#2f9ea5]">Next</button>
-              <button onClick={() => setExpanded(e => !e)} className="hover:bg-teal-50 px-3 py-1 text-sm bg-white rounded shadow text-[#2f9ea5]">
+              <button onClick={prevMonth} className="px-2 py-0.5 text-xs bg-white hover:bg-teal-50 rounded shadow text-[#2f9ea5]">Prev</button>
+              <button onClick={nextMonth} className="px-2 py-0.5 text-xs bg-white rounded shadow hover:bg-teal-50 text-[#2f9ea5]">Next</button>
+              <button onClick={() => setExpanded(e => !e)} className="hover:bg-teal-50 px-2 py-0.5 text-xs bg-white rounded shadow text-[#2f9ea5]">
                 {expanded ? 'Collapse' : 'Expand'}
               </button>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-            <div className="flex w-full sm:w-auto gap-3 flex-col sm:flex-row">
-              <div className="bg-white rounded px-3 py-2 shadow flex-1 text-center sm:text-left">
-                <div className="text-sm text-slate-500">Total this month</div>
-                <div className="text-base font-bold">{totalTasks}</div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+            <div className="flex w-full sm:w-auto gap-2 flex-col sm:flex-row">
+              <div className="bg-white rounded px-2 py-1 shadow flex-1 text-center sm:text-left">
+                <div className="text-xs text-slate-500">Total this month</div>
+                <div className="text-sm font-bold">{totalTasks}</div>
               </div>
-              <div className="bg-white rounded px-3 py-2 shadow  text-center sm:text-left">
-                <div className="text-sm text-slate-500">Next due</div>
-                <div className="text-sm text-slate-700">{nextTask ? `${nextTask.title} — ${new Date(nextTask.dueDate).toLocaleString()}` : '—'}</div>
+              <div className="bg-white rounded px-2 py-1 shadow  text-center sm:text-left">
+                <div className="text-xs text-slate-500">Next due</div>
+                <div className="text-xs text-slate-700">{nextTask ? `${nextTask.title} — ${new Date(nextTask.dueDate).toLocaleString()}` : '—'}</div>
               </div>
             </div>
             <div className="w-full sm:w-auto flex justify-start sm:justify-end">
-              <button onClick={() => navigate('/dashboard')} className="text-sm px-3 py-2 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
+              <button onClick={() => navigate('/dashboard')} className="text-xs px-2 py-1 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
             </div>
           </div>
 
-          <div className={`grid grid-cols-7 gap-2 text-sm ${expanded ? 'w-full' : ''}`}>
+          <div className={`grid grid-cols-7 gap-2 text-xs ${expanded ? 'w-full' : ''}`}>
             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
               <div key={d} className="text-center font-medium">{d}</div>
             ))}

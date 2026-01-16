@@ -7,7 +7,7 @@ const TaskDetailPanel = ({
   updateTaskField,
   handleDeleteTask,
   setShowPanel,
-  panelWidth = 900
+  panelWidth = 600
 }) => {
   const panelRef = useRef(null);
 
@@ -55,7 +55,7 @@ const TaskDetailPanel = ({
   return (
     <div
       ref={panelRef}
-  className="right-panel bg-[#f6f7f9] border-l-4 border-[#5faeb6] shadow-lg p-3 md:p-4 fixed right-0 top-0 h-full overflow-y-auto z-50"
+  className="right-panel bg-[#f6f7f9] border-l-4 border-[#5faeb6] shadow-lg p-2 md:p-3 fixed right-0 top-0 h-full overflow-y-auto z-50"
       style={{ width: responsiveWidth }}
     >
       
@@ -68,18 +68,18 @@ const TaskDetailPanel = ({
 
       
       <div className="pl-2">
-        <div className="flex justify-between items-center mb-3 md:mb-4">
-          <h2 className="text-lg md:text-xl font-bold text-[#323a45]">Task Details</h2>
+        <div className="flex justify-between items-center mb-2 md:mb-3">
+          <h2 className="text-base md:text-lg font-bold text-[#323a45]">Task Details</h2>
           <button
             onClick={() => setShowPanel(false)}
-            className="text-[#323a45] hover:text-red-600 text-xl font-bold"
+            className="text-[#323a45] hover:text-red-600 text-lg font-bold"
             title="Close"
           >
             ✖
           </button>
         </div>
 
-  <div className="pl-2 space-y-4 md:space-y-5">
+  <div className="pl-2 space-y-3 md:space-y-4">
           <input
             type="text"
             value={selectedTask.title}
@@ -93,24 +93,24 @@ const TaskDetailPanel = ({
                 updateTaskField("title", selectedTask.title);
               }
             }}
-            className="w-full border border-[#778899] rounded-lg px-3 py-2 text-base md:text-lg font-semibold bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-[#323a45]"
+            className="w-full border border-[#778899] rounded-lg px-2 py-1.5 text-sm md:text-base font-semibold bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-[#323a45]"
             aria-label="Task Title"
           />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div
               onClick={() =>
                 updateTaskField("completed", !selectedTask.completed)
               }
-            className={`w-6 h-6 md:w-6 md:h-6 flex items-center justify-center border-2 rounded-full cursor-pointer transition-colors duration-200
+            className={`w-5 h-5 flex items-center justify-center border-2 rounded-full cursor-pointer transition-colors duration-200
           ${selectedTask.completed ? "bg-[#5faeb6] border-[#5faeb6]" : "border-[#778899] hover:border-[#5faeb6]"}`}
               title="Toggle Complete"
             >
-              {selectedTask.completed && <Check size={12} className="text-white" />}
+              {selectedTask.completed && <Check size={10} className="text-white" />}
             </div>
 
             <Star
-              size={18}
+              size={16}
               className={`cursor-pointer transition-colors duration-200
                 ${selectedTask?.isImportant ? 'text-yellow-400' : 'text-[#778899] hover:text-yellow-400'}`}
               onClick={() =>
@@ -122,9 +122,9 @@ const TaskDetailPanel = ({
 
           
           <div>
-            <label className="text-sm md:text-base font-semibold mb-1 block text-[#323a45]">Description</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-[#323a45]">Description</label>
             <textarea
-              className="w-full border border-[#778899] rounded-lg p-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm md:text-base text-[#323a45]"
+              className="w-full border border-[#778899] rounded-lg p-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-xs md:text-sm text-[#323a45]"
               aria-label="Description"
               value={selectedTask.description}
               placeholder="Add a description..."
@@ -137,11 +137,11 @@ const TaskDetailPanel = ({
           </div>
 
           <div>
-            <label className="text-sm md:text-base font-semibold mb-1 block text-[#323a45]">Priority</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-[#323a45]">Priority</label>
             <select
               value={selectedTask.priority}
               onChange={(e) => updateTaskField("priority", e.target.value)}
-              className="border border-[#778899] rounded-lg p-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm md:text-base text-[#323a45]"
+              className="border border-[#778899] rounded-lg p-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-xs md:text-sm text-[#323a45]"
               aria-label="Priority"
             >
               <option value="Low">Low</option>
@@ -151,11 +151,11 @@ const TaskDetailPanel = ({
           </div>
 
           <div>
-            <label className="text-sm md:text-base font-semibold mb-1 block text-[#323a45]">Due Date</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-[#323a45]">Due Date</label>
             <input
               type="date"
               min={new Date().toISOString().substr(0,10)}
-              className="w-full border border-[#778899] rounded-lg px-3 py-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm md:text-base text-[#323a45]"
+              className="w-full border border-[#778899] rounded-lg px-2 py-1.5 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-xs md:text-sm text-[#323a45]"
               aria-label="Due Date"
               value={
                 selectedTask.dueDate
@@ -169,7 +169,7 @@ const TaskDetailPanel = ({
           </div>
 
           <div className="steps-container">
-            <label className="text-sm md:text-base font-semibold mb-1 block text-[#323a45] ">Steps</label>
+            <label className="text-xs md:text-sm font-semibold mb-1 block text-[#323a45] ">Steps</label>
             <ul className="space-y-2">
               {(selectedTask.steps || []).map((step, i) => (
                 <li key={i} className="flex items-center gap-2">
@@ -180,10 +180,10 @@ const TaskDetailPanel = ({
                       setSelectedTask({ ...selectedTask, steps: newSteps });
                       updateTaskField("steps", newSteps);
                     }}
-                    className={`w-4 h-4 md:w-4 md:h-4 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
+                    className={`w-3.5 h-3.5 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-200
                       ${step.done ? "bg-[#5faeb6] border-[#5faeb6]" : "border-[#778899] hover:border-[#5faeb6]"}`}
                   >
-                    {step.done && <Check size={10} className="text-white" />}
+                    {step.done && <Check size={8} className="text-white" />}
                   </div>
 
                   <input
@@ -207,7 +207,7 @@ const TaskDetailPanel = ({
                         updateTaskField("steps", newSteps);
                       }
                     }}
-                    className="border border-[#778899] px-2 py-1 rounded-lg w-full bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm md:text-base text-[#323a45]"
+                    className="border border-[#778899] px-2 py-1 rounded-lg w-full bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-xs md:text-sm text-[#323a45]"
                     aria-label="Step"
                     placeholder="Type a step..."
                     autoFocus={i === selectedTask.steps.length - 1 && step.text === ""}
@@ -215,7 +215,7 @@ const TaskDetailPanel = ({
 
                   <button
                     type="button"
-                    className="text-red-500 hover:text-red-700 text-lg md:text-lg"
+                    className="text-red-500 hover:text-red-700 text-base"
                     onClick={() => {
                       const newSteps = selectedTask.steps.filter((_, idx) => idx !== i);
                       setSelectedTask({ ...selectedTask, steps: newSteps });
@@ -230,7 +230,7 @@ const TaskDetailPanel = ({
 
             <button
               type="button"
-              className="mt-2 text-xs md:text-sm text-[#5faeb6] hover:underline flex items-center gap-1"
+              className="mt-2 text-xs text-[#5faeb6] hover:underline flex items-center gap-1"
               onClick={() => {
                 const newSteps = [...(selectedTask.steps || []), { text: "", done: false }];
                 setSelectedTask({ ...selectedTask, steps: newSteps });
@@ -247,9 +247,9 @@ const TaskDetailPanel = ({
           handleDeleteTask(selectedTask._id);
           setShowPanel(false);
         }}
-  className="mt-4 mx-auto w-full flex items-center justify-center text-[#f6f7f9] bg-red-700 hover:bg-red-900 py-2 px-4 rounded-lg shadow transition-colors text-sm md:text-base"
+  className="mt-3 mx-auto w-full flex items-center justify-center text-[#f6f7f9] bg-red-700 hover:bg-red-900 py-1.5 px-3 rounded-lg shadow transition-colors text-xs md:text-sm"
       >
-        <Trash2 size={16} className="mr-2" /> Delete Task
+        <Trash2 size={14} className="mr-2" /> Delete Task
       </button>
     </div>
   );

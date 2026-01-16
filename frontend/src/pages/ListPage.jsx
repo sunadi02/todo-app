@@ -290,59 +290,59 @@ const ListPage = () => {
         />
 
         <main className="flex-1 pr-2 md:pr-3 lg:pr-4 pt-32 md:pt-32 pb-20 md:pb-0">
-          <div className="flex justify-between items-center mb-4 md:mb-6">
-            <h1 className="text-base sm:text-lg font-bold flex items-center gap-3 bg-[#f6f7f9]/80 backdrop-blur rounded-lg px-2 py-1 sm:px-3 sm:py-1.5 shadow">
+          <div className="flex justify-between items-center mb-3 md:mb-4">
+            <h1 className="text-sm sm:text-base font-bold flex items-center gap-2 bg-[#f6f7f9]/80 backdrop-blur rounded-lg px-2 py-1 shadow">
               <span className="text-[#323a45]">{decodeURIComponent(listTitle)}</span>
             </h1>
-            <div className="flex items-center gap-3">
-              <Link to="/Dashboard" className="text-[#3f6184] hover:underline font-medium text-xs md:text-sm">
+            <div className="flex items-center gap-2">
+              <Link to="/Dashboard" className="text-[#3f6184] hover:underline font-medium text-xs">
                 ← Back to Dashboard
               </Link>
               
             </div>
             <div>
-              <button onClick={() => navigate('/calendar')} className="mr-3 ml-2 bg-white/90 px-2 py-1.5 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-1.5" aria-label="Open calendar">
-                <CalendarIcon size={18} className="text-[#5faeb6]" />
+              <button onClick={() => navigate('/calendar')} className="mr-2 ml-2 bg-white/90 px-2 py-1 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-1" aria-label="Open calendar">
+                <CalendarIcon size={16} className="text-[#5faeb6]" />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
+          <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
             {['all', 'important', 'completed'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full shadow transition-all duration-200 text-xs sm:text-sm
+                className={`flex items-center gap-1 px-2 py-1 rounded-full shadow transition-all duration-200 text-xs
                   ${filter === f ? 'bg-[#5faeb6] text-[#f6f7f9]' : 'bg-[#f6f7f9]/90 text-[#3f6184] hover:bg-[#5faeb6]/10'}`}
                 aria-label={`Filter: ${f}`}
               >
-                {f === 'all' && <Menu size={14} />}
-                {f === 'important' && <Star size={14} />}
-                {f === 'completed' && <Check size={14} />}
+                {f === 'all' && <Menu size={12} />}
+                {f === 'important' && <Star size={12} />}
+                {f === 'completed' && <Check size={12} />}
                 {f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
           
 
-          <form className="mb-4 md:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-3" onSubmit={handleAddTask}>
+          <form className="mb-3 md:mb-4 flex flex-col sm:flex-row gap-2" onSubmit={handleAddTask}>
             <input
               type="text"
               placeholder="Add a new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              className="flex-1 border border-[#3f6184] rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm text-[#323a45] placeholder-[#778899]"
+              className="flex-1 border border-[#3f6184] rounded-lg px-2 py-1 sm:px-3 sm:py-1.5 bg-[#f6f7f9] shadow focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-xs text-[#323a45] placeholder-[#778899]"
               aria-label="Add new task"
             />
             <button
               type="submit"
-              className="bg-[#5faeb6] text-[#f6f7f9] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow hover:bg-[#3f6184] transition-colors font-semibold text-sm"
+              className="bg-[#5faeb6] text-[#f6f7f9] px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow hover:bg-[#3f6184] transition-colors font-semibold text-xs"
             >
               Add Task
             </button>
           </form>
 
-          <div className="grid grid-cols-1 gap-3 md:gap-4 mb-6">
+          <div className="grid grid-cols-1 gap-2 md:gap-3 mb-6">
             {tasks.map((task) => (
               <div
                 key={task._id}
@@ -350,15 +350,15 @@ const ListPage = () => {
                   setSelectedTask(task);
                   setShowPanel(true);
                 }}
-                className={`group p-3 md:p-4 bg-[#f6f7f9] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200 cursor-pointer
+                className={`group p-2 md:p-3 bg-[#f6f7f9] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200 cursor-pointer
                   ${task.completed ? 'border-[#778899]' : 'border-[#5faeb6]'}
                   hover:shadow-lg`}
               >
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <div className="flex items-center gap-1">
                     <span className="relative">
                       <Star
-                        size={18}
+                        size={16}
                         className={`cursor-pointer transition-colors duration-150
                           ${task.isImportant ? "text-yellow-400" : "text-slate-300"}
                         `}
@@ -371,7 +371,7 @@ const ListPage = () => {
                     <span className="relative">
                       <div
                         onClick={(e) => { e.stopPropagation(); toggleComplete(task._id, task.completed); }}
-                        className={`w-4 h-4 hover:border-green-500 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-150
+                        className={`w-3.5 h-3.5 hover:border-green-500 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-150
                           ${task.completed ? "bg-green-500 border-green-500" : "border-slate-300"}
                         `}
                         onMouseEnter={e => {
@@ -385,20 +385,20 @@ const ListPage = () => {
                           }
                         }}
                       >
-                        {task.completed && <Check size={12} className="text-white" />}
+                        {task.completed && <Check size={10} className="text-white" />}
                       </div>
                     </span>
                   </div>
                   
                   <span
-                    className={`text-sm md:text-base font-medium flex-1
+                    className={`text-xs md:text-sm font-medium flex-1
                       ${task.completed ? 'line-through text-[#778899]' : 'text-[#323a45] group-hover:text-[#3f6184]'}`}
                   >
                     {task.title}
                   </span>
                 </div>
                 
-                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-3">
+                <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-2">
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
