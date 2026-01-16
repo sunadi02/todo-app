@@ -11,12 +11,10 @@ export default function Login() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [resetStep, setResetStep] = useState(1); // 1: email, 2: code, 3: new password
+  const [resetStep, setResetStep] = useState(1);
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // ... keep your existing handleLogin function ...
 
   const handleLogin = async (e) => {
     e.preventDefault();

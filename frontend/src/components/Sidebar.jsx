@@ -1,12 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2 } from "lucide-react";
+import { ListTodo, Star, Check, Plus, LogOut, Pencil, Trash2, Menu } from "lucide-react";
 import API from "../api";
 import Todo from "../../src/assets/todo.jpg";
-
-const MIN_WIDTH = 220;
-const MAX_WIDTH = 360;
-const DEFAULT_WIDTH = 280;
 
 const Sidebar = ({
   filter,
@@ -22,11 +18,20 @@ const Sidebar = ({
   contextMenu,
   setContextMenu,
   isSidebarOpen,
+  onCollapsedChange,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const sidebarRef = useRef();
+
+  const handleToggleCollapse = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapsedChange) {
+      onCollapsedChange(newCollapsed);
+    }
+  };
 
   const getActiveFilter = () => {
     if (location.pathname.includes('/list/')) return null;
@@ -99,114 +104,85 @@ const Sidebar = ({
     return () => window.removeEventListener("click", handleClick);
   }, [contextMenu, setContextMenu]);
 
-  // resizer logic
-  useEffect(() => {
-    if (!isSidebarOpen) return;
-    setSidebarWidth(DEFAULT_WIDTH);
-  }, [isSidebarOpen]);
-
-  const handleMouseDown = (e) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = sidebarWidth;
-
-    const onMouseMove = (moveEvent) => {
-      const newWidth = Math.min(
-        Math.max(startWidth + (moveEvent.clientX - startX), MIN_WIDTH),
-        MAX_WIDTH
-      );
-      setSidebarWidth(newWidth);
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  };
-
-
-
   return (
     <aside
       ref={sidebarRef}
-      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gradient-to-b from-[#f6f7f9] to-[#5faeb6]/20 p-6 flex flex-col z-30 transition-all duration-300 ${
+      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gradient-to-b from-[#f6f7f9] to-[#5faeb6]/20 flex flex-col z-30 transition-all duration-300 ${
         isSidebarOpen ? '' : 'w-0 overflow-hidden'
       }`}
       style={{
-        width: isSidebarOpen ? sidebarWidth : 0,
-        minWidth: isSidebarOpen ? MIN_WIDTH : 0,
-        maxWidth: isSidebarOpen ? MAX_WIDTH : 0,
+        width: isSidebarOpen ? (isCollapsed ? '60px' : '280px') : 0,
+        padding: isSidebarOpen ? (isCollapsed ? '1rem 0.5rem' : '1.5rem') : 0,
         boxShadow: isSidebarOpen ? '4px 0 6px -1px rgba(50, 58, 69, 0.07)' : 'none',
-        transition: 'width 0.3s'
+        transition: 'width 0.3s, padding 0.3s'
       }}
       aria-label="Sidebar navigation"
     >
       
-      {isSidebarOpen && (
-        <div
-          className="absolute top-0 right-0 h-full w-2 cursor-ew-resize z-40"
-          style={{ userSelect: "none" }}
-          onMouseDown={handleMouseDown}
-        />
-      )}
+      <button
+        onClick={handleToggleCollapse}
+        className="mb-4 p-2 hover:bg-[#5faeb6]/20 rounded transition-colors self-start"
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <Menu size={20} className="text-[#323a45]" />
+      </button>
 
       
-      <div className="flex items-center gap-2 mb-6 mt-10 ml-3">
+      <div className={`flex items-center mb-6 mt-4 transition-all ${isCollapsed ? 'justify-center' : 'gap-2 ml-3'}`}>
         <img
           src={Todo}
           alt="TaskFlow Logo"
           className="h-7 w-7 object-contain"
         />
-        <h1 className="text-xl font-bold text-[#323a45]">TaskFlow</h1>
+        {!isCollapsed && <h1 className="text-xl font-bold text-[#323a45]">TaskFlow</h1>}
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto ml-3">
-        <h2 className="text-base font-bold mb-3 text-[#3f6184]">My Lists</h2>
+      <div className="flex-1 overflow-y-auto">
+        {!isCollapsed && <h2 className="text-base font-bold mb-3 text-[#3f6184] ml-3">My Lists</h2>}
         <ul className="space-y-1.5 text-[#323a45]">
           <li
-            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1.5 ml-3'} cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'all' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
               setFilter("all");
               navigate("/dashboard");
             }}
+            title={isCollapsed ? "All Tasks" : ""}
           >
-            <ListTodo size={16} /> All Tasks
+            <ListTodo size={16} /> {!isCollapsed && 'All Tasks'}
           </li>
           <li
-            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1.5 ml-3'} cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'important' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
               setFilter("important");
               navigate("/dashboard");
             }}
+            title={isCollapsed ? "Important" : ""}
           >
-            <Star size={16} /> Important
+            <Star size={16} /> {!isCollapsed && 'Important'}
           </li>
           <li
-            className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1.5 ml-3'} cursor-pointer p-1.5 rounded text-sm ${
               activeFilter === 'completed' ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
             }`}
             onClick={() => {
               setFilter("completed");
               navigate("/dashboard");
             }}
+            title={isCollapsed ? "Completed" : ""}
           >
-            <Check size={16} /> Completed
+            <Check size={16} /> {!isCollapsed && 'Completed'}
           </li>
 
-          <hr className="border-[#778899] my-3" />
+          {!isCollapsed && <hr className="border-[#778899] my-3" />}
 
           {lists.map((listName) => (
             <li
               key={listName._id}
-              className={`flex items-center gap-1.5 cursor-pointer p-1.5 rounded text-sm ${
+              className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1.5 ml-3'} cursor-pointer p-1.5 rounded text-sm ${
                 currentListFilter === listName.title ? 'bg-[#5faeb6]/30 text-[#3f6184]' : 'hover:text-[#3f6184] hover:bg-[#5faeb6]/20'
               }`}
               onClick={() => navigate(`/list/${encodeURIComponent(listName.title)}`)}
@@ -215,19 +191,29 @@ const Sidebar = ({
                 setContextMenu({ visible: true, x: e.pageX, y: e.pageY, list: listName });
               }}
               aria-label={`List: ${listName.title}`}
+              title={isCollapsed ? listName.title : ""}
             >
-              <ListTodo size={15} /> <span className="truncate">{listName.title}</span>
+              <ListTodo size={15} /> {!isCollapsed && <span className="truncate">{listName.title}</span>}
             </li>
           ))}
 
-          {showNewListInput ? (
+          {isCollapsed ? (
+            <li
+              className="flex items-center justify-center cursor-pointer hover:text-[#3f6184] hover:bg-[#5faeb6]/20 p-1.5 rounded mt-3 text-sm"
+              onClick={() => setShowNewListInput(true)}
+              aria-label="Add new list"
+              title="New List"
+            >
+              <Plus size={16} />
+            </li>
+          ) : (showNewListInput ? (
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 if (!newListTitle.trim()) return;
                 await handleAddList(newListTitle.trim());
               }}
-              className="mt-2"
+              className="mt-2 ml-3"
             >
               <input
                 type="text"
@@ -242,13 +228,13 @@ const Sidebar = ({
             </form>
           ) : (
             <li
-              className="flex items-center gap-1.5 cursor-pointer hover:text-[#3f6184] hover:bg-[#5faeb6]/20 p-1.5 rounded mt-3 text-sm"
+              className="flex items-center gap-1.5 ml-3 cursor-pointer hover:text-[#3f6184] hover:bg-[#5faeb6]/20 p-1.5 rounded mt-3 text-sm"
               onClick={() => setShowNewListInput(true)}
               aria-label="Add new list"
             >
               <Plus size={16} /> New List
             </li>
-          )}
+          ))}
         </ul>
       </div>
 
@@ -260,21 +246,26 @@ const Sidebar = ({
               localStorage.removeItem("token");
               window.location.href = "/";
             }}
-            className="flex items-center gap-1.5 w-full text-left text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-[#f6f7f9] text-sm"
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1.5 ml-3'} w-full text-left text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-[#f6f7f9] text-sm`}
             aria-label="Logout"
+            title={isCollapsed ? "Logout" : ""}
           >
             <LogOut size={16} />
-            <span>Logout</span>
+            {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
 
-        <div className="w-full">
-          <hr className="border-t border-[#e6eef0] my-1.5" />
-        </div>
+        {!isCollapsed && (
+          <>
+            <div className="w-full">
+              <hr className="border-t border-[#e6eef0] my-1.5" />
+            </div>
 
-        <div className="mt-1.5 text-xs text-[#778899] ml-1">
-          © {new Date().getFullYear()} TaskFlow
-        </div>
+            <div className="mt-1.5 text-xs text-[#778899] ml-1">
+              © {new Date().getFullYear()} TaskFlow
+            </div>
+          </>
+        )}
       </div>
 
       

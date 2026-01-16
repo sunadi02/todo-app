@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isUploading] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,12 +59,11 @@ const Dashboard = () => {
   const fetchTasks = useCallback(async () => {
     try {
       const res = await API.get('/api/tasks');
-      let all = res.data.filter(task => !task.list); // Only show tasks without a list
+      let all = res.data.filter(task => !task.list);
 
       if (filter === "important") all = all.filter(task => task.isImportant);
       if (filter === "completed") all = all.filter(task => task.completed);
 
-      //sorting by completion status and priority
       all.sort((a, b) => {
         if (a.completed && !b.completed) return 1;
         if (!a.completed && b.completed) return -1;
@@ -79,14 +79,12 @@ const Dashboard = () => {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  // refresh when tasks updated elsewhere (calendar, create, delete)
   useEffect(() => {
     const handler = () => fetchTasks();
     window.addEventListener('tasks-updated', handler);
     return () => window.removeEventListener('tasks-updated', handler);
   }, [fetchTasks]);
 
-  // Listen for global open-task events from notifications
   useEffect(() => {
     const handler = (e) => {
       if (e?.detail) {
@@ -140,7 +138,6 @@ const Dashboard = () => {
       });
   setTasks(prev => [res.data, ...prev]);
       setNewTask("");
-  // notify rest of app (notifications) that tasks changed
   window.dispatchEvent(new Event('tasks-updated'));
     } catch (err) {
       console.error("Error adding task", err);
@@ -267,9 +264,11 @@ const Dashboard = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full z-30  duration-300 bg-white shadow-lg sidebar-container
-          ${isSidebarOpen ? ' w-64' : '-translate-x-0 w-0 overflow-hidden'} 
-          md:relative  md:w-64 md:overflow-visible`}
+        className="fixed top-0 left-0 h-full z-30 duration-300 bg-white shadow-lg sidebar-container md:relative md:overflow-visible"
+        style={{
+          width: isSidebarOpen ? (isSidebarCollapsed ? '60px' : '60px') : '0',
+          transition: 'width 0.3s'
+        }}
       >
         <Sidebar
           filter={filter}
@@ -286,11 +285,18 @@ const Dashboard = () => {
           setContextMenu={setContextMenu}
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
+          onCollapsedChange={setIsSidebarCollapsed}
         />
       </div>
 
       {/* Main Content Area */}
-  <div className={`mx-7 flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}> 
+  <div 
+    className="flex-1 flex flex-col transition-all duration-300" 
+    style={{
+      marginLeft: isSidebarOpen && !isMobile ? (isSidebarCollapsed ? '60px' : '280px') : '0',
+      transition: 'margin-left 0.3s'
+    }}
+  > 
         <TopNavbar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -299,18 +305,18 @@ const Dashboard = () => {
           setUser={setUser}
         />
 
-  <main className="flex-1 px-2 md:px-4 lg:px-6 pt-16 md:pt-20 pb-20 md:pb-0">
+  <main className="flex-1 pr-2 md:pr-3 lg:pr-4 pt-16 md:pt-20 pb-20 md:pb-0">
           
           <section className="mb-4 md:mb-6 mt-6 md:w-full mx-auto">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-slate-700/90 rounded-lg shadow px-3 py-2 sm:px-4 sm:py-3">
               <div className="flex-shrink-0">
-                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+                <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
                   <circle cx="50" cy="50" r="48" fill="#5faeb6" />
                   <path d="M30 52l14 14 26-26" stroke="#3f6184" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <div className="text-center sm:text-left">
-                <h2 className="text-base sm:text-lg md:text-xl font-bold text-white mb-0.5">
+                <h2 className="text-sm sm:text-base md:text-lg font-bold text-white mb-0.5">
                   Welcome back, <span className="text-[#5faeb6]">{user?.name || 'Loading...'}!</span>
                 </h2>
                 <p className="text-slate-200 text-xs sm:text-sm">
@@ -322,12 +328,12 @@ const Dashboard = () => {
 
           
           <div className="flex justify-between items-center mb-4 md:mb-6">
-            <h1 className="text-lg sm:text-xl font-bold bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow">
+            <h1 className="text-base sm:text-lg font-bold bg-white/80 backdrop-blur rounded-lg px-2 py-1 sm:px-3 sm:py-1.5 shadow">
               Today's Tasks
             </h1>
             <div>
               <button onClick={() => navigate('/calendar')} className="mr-3 ml-2 bg-white/90 px-2 py-1.5 rounded shadow hover:bg-[#f0f9f9] flex items-center gap-1.5" aria-label="Open calendar">
-                <CalendarIcon size={20} className="text-[#5faeb6]" /> 
+                <CalendarIcon size={18} className="text-[#5faeb6]" /> 
               </button>
             </div>
           </div>
@@ -373,7 +379,8 @@ const Dashboard = () => {
             {filteredTasks.map((task) => (
               <div
                 key={task._id}
-                className={`group p-3 md:p-4 bg-[#f6f7f9] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200
+                onClick={() => handleSelectTask(task)}
+                className={`group p-3 md:p-4 bg-[#f6f7f9] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between shadow border-l-4 transition-all duration-200 cursor-pointer
                   ${task.completed ? 'border-[#778899]' : 'border-[#5faeb6]'}
                   hover:shadow-lg`}
               >
@@ -385,7 +392,7 @@ const Dashboard = () => {
                         className={`cursor-pointer transition-colors duration-150
                           ${task.isImportant ? "text-yellow-400" : "text-slate-300"}
                         `}
-                        onClick={() => handleToggleImportant(task._id)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleImportant(task._id); }}
                         onMouseEnter={e => e.currentTarget.classList.add('text-yellow-300')}
                         onMouseLeave={e => e.currentTarget.classList.remove('text-yellow-300')}
                         style={task.isImportant ? { color: '#facc15' } : {}}
@@ -393,7 +400,7 @@ const Dashboard = () => {
                     </span>
                     <span className="relative">
                       <div
-                        onClick={() => handleToggleComplete(task._id, task.completed)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleComplete(task._id, task.completed); }}
                         className={`w-4 h-4 hover:border-green-500 rounded-full border-2 cursor-pointer flex items-center justify-center transition-colors duration-150
                           ${task.completed ? "bg-green-500 border-green-500" : "border-slate-300"}
                         `}
@@ -414,8 +421,7 @@ const Dashboard = () => {
                   </div>
                   
                   <span
-                    onClick={() => handleSelectTask(task)}
-                    className={`cursor-pointer text-sm md:text-base font-medium flex-1
+                    className={`text-sm md:text-base font-medium flex-1
                       ${task.completed ? 'line-through text-[#778899]' : 'text-[#323a45] group-hover:text-[#3f6184]'}`}
                   >
                     {task.title}
@@ -424,7 +430,7 @@ const Dashboard = () => {
                 
                 <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-3">
                   <button 
-                    onClick={() => handleSelectTask(task)}
+                    onClick={(e) => { e.stopPropagation(); handleSelectTask(task); }}
                     className="text-xs text-[#3f6184] hover:text-[#5faeb6]"
                     aria-label="Task details"
                   >

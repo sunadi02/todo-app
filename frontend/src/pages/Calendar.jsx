@@ -3,7 +3,6 @@ import API from '../api';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import TaskDetailPanel from '../components/TaskDetailPanel';
-// ...existing imports
 import { useNavigate } from 'react-router-dom';
 
 function startOfMonth(date) {
@@ -36,6 +35,7 @@ const Calendar = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -50,7 +50,6 @@ const Calendar = ({ user, setUser }) => {
 
   const toggleSidebar = () => setIsSidebarOpen(s => !s);
 
-  // sidebar & lists state (reused by Sidebar)
   const [filter, setFilter] = useState('all');
   const [lists, setLists] = useState([]);
   const [showNewListInput, setShowNewListInput] = useState(false);
@@ -58,7 +57,6 @@ const Calendar = ({ user, setUser }) => {
   const [currentListFilter, setCurrentListFilter] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, list: null });
 
-  // right panel (task detail / create)
   const [selectedTask, setSelectedTask] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
   const [newTaskDate, setNewTaskDate] = useState(null);
@@ -83,7 +81,6 @@ const Calendar = ({ user, setUser }) => {
       setTasksByDate(map);
       setTotalTasks(res.data.length || 0);
 
-      // find next upcoming task in this range
       const now = new Date();
       const sorted = res.data
         .filter(t => t.dueDate && new Date(t.dueDate) >= now)
@@ -99,7 +96,6 @@ const Calendar = ({ user, setUser }) => {
   const prevMonth = () => setCurrent(c => new Date(c.getFullYear(), c.getMonth() -1, 1));
   const nextMonth = () => setCurrent(c => new Date(c.getFullYear(), c.getMonth() +1, 1));
 
-  // build calendar grid
   const year = current.getFullYear();
   const month = current.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -109,7 +105,6 @@ const Calendar = ({ user, setUser }) => {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
 
-  // handlers for selecting, creating, updating, deleting tasks
   useEffect(() => {
     const handler = (e) => {
       const detail = e?.detail;
@@ -191,11 +186,10 @@ const Calendar = ({ user, setUser }) => {
 
   const handleCreateTask = async () => {
     if (!newTaskTitle || !newTaskDate) return;
-    // validate no past dates
     const todayIso = localISODate(new Date());
     if (newTaskDate < todayIso) return;
     try {
-      const due = dateFromLocalISO(newTaskDate); // local midnight
+      const due = dateFromLocalISO(newTaskDate);
       await API.post('/api/tasks', { title: newTaskTitle, dueDate: due.toISOString(), completed: false, isImportant: false, priority: 'Medium', steps: [] });
       setShowPanel(false);
       setNewTaskDate(null);
@@ -216,16 +210,16 @@ const Calendar = ({ user, setUser }) => {
           className="text-2xl fixed top-4 left-4 z-40 p-2 px-4 rounded-md bg-slate-700 text-white sidebar-toggle-button"
           aria-label="Toggle sidebar"
         >
-          {/* simple menu icon */}
           ☰
         </button>
       )}
 
-      {/* Sidebar wrapper to match Dashboard layout and avoid covering main content */}
       <div
-        className={`fixed top-0 left-0 h-full z-30 duration-300 bg-white shadow-lg sidebar-container
-          ${isSidebarOpen ? ' w-64' : '-translate-x-0 w-0 overflow-hidden'}
-          md:relative md:w-64 md:overflow-visible`}
+        className="fixed top-0 left-0 h-full z-30 duration-300 bg-white shadow-lg sidebar-container md:relative md:overflow-visible"
+        style={{
+          width: isSidebarOpen ? (isSidebarCollapsed ? '60px' : '60px') : '0',
+          transition: 'width 0.3s'
+        }}
       >
         <Sidebar
           filter={filter}
@@ -242,22 +236,28 @@ const Calendar = ({ user, setUser }) => {
           setContextMenu={setContextMenu}
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
+          onCollapsedChange={setIsSidebarCollapsed}
         />
       </div>
 
-      {/* Main container (matches Dashboard): flex column so TopNavbar sits above content and content shifts when sidebar visible) */}
-      <div className={`flex-1 w-auto sm:w-auto sm:m-10 flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+      <div 
+        className="flex-1 w-auto flex-col transition-all duration-300"
+        style={{
+          marginLeft: isSidebarOpen && !isMobile ? (isSidebarCollapsed ? '60px' : '280px') : '0',
+          transition: 'margin-left 0.3s'
+        }}
+      >
         <TopNavbar user={user} setUser={setUser} navbarHeight="h-16 md:h-20" />
 
-  <main className="flex-1 p-4 pt-16 md:pt-20 max-w-5xl mx-auto">
+  <main className="flex-1 pr-2 md:pr-3 lg:pr-4 pt-16 md:pt-20 max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-semibold text-[#2f9ea5]">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
+              <h2 className="text-xl font-semibold text-[#2f9ea5]">{current.toLocaleString('default', { month: 'long' })} {current.getFullYear()}</h2>
             </div>
             <div className="flex gap-2 items-center">
-              <button onClick={prevMonth} className="px-3 py-1 bg-white hover:bg-teal-50 rounded shadow text-[#2f9ea5]">Prev</button>
-              <button onClick={nextMonth} className="px-3 py-1 bg-white rounded shadow hover:bg-teal-50 text-[#2f9ea5]">Next</button>
-              <button onClick={() => setExpanded(e => !e)} className=" hover:bg-teal-50 px-3 py-1 bg-white rounded shadow text-[#2f9ea5]">
+              <button onClick={prevMonth} className="px-3 py-1 text-sm bg-white hover:bg-teal-50 rounded shadow text-[#2f9ea5]">Prev</button>
+              <button onClick={nextMonth} className="px-3 py-1 text-sm bg-white rounded shadow hover:bg-teal-50 text-[#2f9ea5]">Next</button>
+              <button onClick={() => setExpanded(e => !e)} className="hover:bg-teal-50 px-3 py-1 text-sm bg-white rounded shadow text-[#2f9ea5]">
                 {expanded ? 'Collapse' : 'Expand'}
               </button>
             </div>
@@ -266,20 +266,20 @@ const Calendar = ({ user, setUser }) => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div className="flex w-full sm:w-auto gap-3 flex-col sm:flex-row">
               <div className="bg-white rounded px-3 py-2 shadow flex-1 text-center sm:text-left">
-                <div className="text-base text-slate-500">Total this month</div>
-                <div className="text-lg font-bold">{totalTasks}</div>
+                <div className="text-sm text-slate-500">Total this month</div>
+                <div className="text-base font-bold">{totalTasks}</div>
               </div>
               <div className="bg-white rounded px-3 py-2 shadow  text-center sm:text-left">
-                <div className="text-base text-slate-500">Next due</div>
-                <div className="text-base text-slate-700">{nextTask ? `${nextTask.title} — ${new Date(nextTask.dueDate).toLocaleString()}` : '—'}</div>
+                <div className="text-sm text-slate-500">Next due</div>
+                <div className="text-sm text-slate-700">{nextTask ? `${nextTask.title} — ${new Date(nextTask.dueDate).toLocaleString()}` : '—'}</div>
               </div>
             </div>
             <div className="w-full sm:w-auto flex justify-start sm:justify-end">
-              <button onClick={() => navigate('/dashboard')} className="text-base px-3 py-2 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
+              <button onClick={() => navigate('/dashboard')} className="text-sm px-3 py-2 bg-white rounded shadow hover:bg-teal-50">Back to Dashboard</button>
             </div>
           </div>
 
-          <div className={`grid grid-cols-7 gap-2 text-lg ${expanded ? 'w-full' : ''}`}>
+          <div className={`grid grid-cols-7 gap-2 text-sm ${expanded ? 'w-full' : ''}`}>
             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
               <div key={d} className="text-center font-medium">{d}</div>
             ))}
@@ -300,7 +300,7 @@ const Calendar = ({ user, setUser }) => {
                   <div className="text-xs text-slate-500">{cell.getDate()}</div>
                   <div className="mt-1 flex-1 overflow-auto">
                       {items.slice(0,maxItems).map(it => (
-                      <div key={it._id} className="text-base py-0.5 px-1 rounded mb-1 bg-[#e6f7f6] text-slate-700" onClick={(e) => { e.stopPropagation(); handleSelectTask(it._id); }}>
+                      <div key={it._id} className="text-xs py-0.5 px-1 rounded mb-1 bg-[#e6f7f6] text-slate-700 cursor-pointer hover:bg-[#d0f0ed]" onClick={(e) => { e.stopPropagation(); handleSelectTask(it._id); }}>
                         {it.title}
                       </div>
                     ))}

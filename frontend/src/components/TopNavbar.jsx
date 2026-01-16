@@ -29,7 +29,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
     confirm: false
   });
   
-  // Removed unused error state
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -43,7 +42,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
   const modalRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Fetch upcoming tasks for notification
   useEffect(() => {
     let mounted = true;
     const fetchNotifications = async () => {
@@ -51,16 +49,14 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
         const res = await API.get('/api/tasks/upcoming');
         if (mounted) setNotifications(res.data || []);
       } catch (err) {
-        // fail silently
       }
     };
 
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 60 * 1000); // poll every minute
+    const id = setInterval(fetchNotifications, 60 * 1000);
     return () => { mounted = false; clearInterval(id); };
   }, []);
 
-  // refresh notifications when tasks change elsewhere in the app
   useEffect(() => {
     const handler = () => {
       API.get('/api/tasks/upcoming').then(res => setNotifications(res.data || [])).catch(() => {});
@@ -69,7 +65,6 @@ const TopNavbar = ({ searchQuery, setSearchQuery, navbarHeight, user, setUser })
     return () => window.removeEventListener('tasks-updated', handler);
   }, []);
 
-  // close notifications when clicking outside
   useEffect(() => {
     if (!showNotifications) return;
     const handleClick = (e) => {
@@ -197,7 +192,6 @@ const handleProfileUpdate = async (e) => {
   setPasswordSuccess('');
 
   try {
-    //validating passwords match
     if (passwordForm.new !== passwordForm.confirm) {
       throw new Error("New passwords don't match");
     }
@@ -213,12 +207,10 @@ const handleProfileUpdate = async (e) => {
     
     setPasswordSuccess('Password updated successfully');
     
-  
     if (response.data.user) {
       setUser(response.data.user);
     }
     
-    //clear form and close modal after 1.5 seconds
     setTimeout(() => {
       setPasswordForm({ current: '', new: '', confirm: '' });
       setShowPasswordModal(false);
@@ -241,9 +233,9 @@ const handleProfileUpdate = async (e) => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 bg-[#323a45] shadow-sm z-30 text-white ${navbarHeight || "h-20"}`}>
+    <header className={`fixed top-0 left-0 right-0 bg-[#323a45] shadow-sm z-30 text-white ${navbarHeight || "h-16"}`}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0"></div>
 
           <div className="flex-1 max-w-2xl mx-32 md:ml-15 ">
@@ -254,7 +246,7 @@ const handleProfileUpdate = async (e) => {
               <input
                 type="text"
                 placeholder="Search tasks..."
-                className="block w-full pl-10 pr-3 py-2 border-2 border-[#3f6184] rounded-md leading-5 bg-[#323a45] placeholder-[#778899] focus:outline-none focus:ring-2 focus:ring-[#5faeb6] focus:border-[#5faeb6] text-base sm:text-lg text-[#f6f7f9]"
+                className="block w-full pl-10 pr-3 py-2 border-2 border-[#3f6184] rounded-md leading-5 bg-[#323a45] placeholder-[#778899] focus:outline-none focus:ring-2 focus:ring-[#5faeb6] focus:border-[#5faeb6] text-sm text-[#f6f7f9]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="Search tasks"
@@ -288,7 +280,7 @@ const handleProfileUpdate = async (e) => {
 
                     {showNotifications && (
                       <div className="absolute right-0 top-10 mt-2 w-80 bg-[#f6f7f9] rounded-md shadow-lg py-2 z-50" role="menu" aria-label="Notifications">
-                        <div className="px-3 py-2 text-lg text-[#323a45] font-semibold">Upcoming tasks</div>
+                        <div className="px-3 py-2 text-sm text-[#323a45] font-semibold">Upcoming tasks</div>
                         <div className="max-h-48 overflow-auto">
                           {notifications.length === 0 ? (
                             <div className="px-3 py-2 text-sm text-[#778899]">No upcoming tasks</div>
@@ -326,11 +318,11 @@ const handleProfileUpdate = async (e) => {
                       </div>
                     )}
                   </div>
-                  <span className="text-base sm:text-lg font-medium text-[#f6f7f9]">
+                  <span className="text-sm font-medium text-[#f6f7f9]">
                     {user?.name || 'Loading...'}
                   </span>
                   <img
-                    className="h-12 w-12 rounded-full border-2 border-[#5faeb6] object-cover"
+                    className="h-8 w-8 rounded-full border-2 border-[#5faeb6] object-cover"
                     src={user?.avatar || 'https://www.gravatar.com/avatar/default?s=200&d=mp'}
                     alt="User profile"
                     onError={(e) => {
@@ -388,14 +380,11 @@ const handleProfileUpdate = async (e) => {
             ref={modalRef}
             className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
           >
-            <h3 className="text-2xl font-bold mb-4 flex items-center">
-              <User className="mr-2" size={20} />
+            <h3 className="text-xl font-bold mb-4 flex items-center">
+              <User className="mr-2" size={18} />
               Edit Profile
             </h3>
             
-            {/* Removed unused error block */}
-            
-            {/* In Profile Modal */}
             {profileError && (
               <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">
                 {profileError}
@@ -410,13 +399,13 @@ const handleProfileUpdate = async (e) => {
             <form onSubmit={handleProfileUpdate}>
               {/* Avatar Upload */}
               <div className="mb-4">
-                <label className="block text-base font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Profile Picture
                 </label>
                 <div className="flex items-center">
                     <div className="relative mr-4">
                     <img
-                      className="h-20 w-20 rounded-full border-2 border-[#5faeb6] object-cover"
+                      className="h-16 w-16 rounded-full border-2 border-[#5faeb6] object-cover"
                       src={profileForm.avatarPreview || 'https://www.gravatar.com/avatar/default?s=200&d=mp'}
                       alt="Profile preview"
                     />
@@ -432,7 +421,7 @@ const handleProfileUpdate = async (e) => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current.click()}
-                      className="flex items-center px-3 py-2 bg-[#f6f7f9] hover:bg-gray-200 rounded-md text-base text-[#323a45] transition"
+                      className="flex items-center px-3 py-2 bg-[#f6f7f9] hover:bg-gray-200 rounded-md text-sm text-[#323a45] transition"
                     >
                       <Upload className="mr-2" size={16} />
                       {profileForm.avatarFile ? 'Change' : 'Upload'} Photo
@@ -446,14 +435,14 @@ const handleProfileUpdate = async (e) => {
 
               {/* Name Field */}
               <div className="mb-4">
-                <label className="block text-base font-semibold text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Name
                 </label>
                 <input
                   type="text"
                   value={profileForm.name}
                   onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
-                  className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg"
+                  className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm"
                   required
                   autoComplete="name"
                   aria-label="Name"
@@ -462,14 +451,14 @@ const handleProfileUpdate = async (e) => {
 
               {/* Email Field */}
               <div className="mb-6">
-                <label className="block text-base font-semibold text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Email
                 </label>
                 <input
                   type="email"
                   value={profileForm.email}
                   onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                  className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg"
+                  className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm"
                   required
                   autoComplete="email"
                   aria-label="Email"
@@ -480,14 +469,14 @@ const handleProfileUpdate = async (e) => {
                 <button
                   type="button"
                   onClick={() => { setShowProfileModal(false); handleCloseProfileModal(); handleClosePasswordModal(); }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-[#323a45] hover:bg-gray-50 transition text-base"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-[#323a45] hover:bg-gray-50 transition text-sm"
                   disabled={isUploading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#5faeb6] text-white rounded-md hover:bg-[#3f6184] transition flex items-center justify-center text-base"
+                  className="px-4 py-2 bg-[#5faeb6] text-white rounded-md hover:bg-[#3f6184] transition flex items-center justify-center text-sm"
                   disabled={isUploading}
                 >
                   {isUploading ? (
@@ -513,14 +502,11 @@ const handleProfileUpdate = async (e) => {
                     ref={modalRef}
                     className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
                   >
-                    <h3 className="text-2xl font-bold mb-4 flex items-center">
-                      <Lock className="mr-2" size={20} />
+                    <h3 className="text-xl font-bold mb-4 flex items-center">
+                      <Lock className="mr-2" size={18} />
                       Change Password
                     </h3>
                     
-                    {/* Removed unused error block */}
-                    
-                    {/* In Password Modal */}
                     {passwordError && (
                       <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">
                         {passwordError}
@@ -534,7 +520,7 @@ const handleProfileUpdate = async (e) => {
 
                     <form onSubmit={handlePasswordUpdate}>
                       <div className="mb-4">
-                        <label className="flex text-base font-semibold text-gray-700 mb-1 items-center">
+                        <label className="flex text-sm font-semibold text-gray-700 mb-1 items-center">
                           Current Password
                         </label>
                         <div className="relative">
@@ -542,7 +528,7 @@ const handleProfileUpdate = async (e) => {
                             type={showPassword.current ? "text" : "password"}
                             value={passwordForm.current}
                             onChange={(e) => setPasswordForm({...passwordForm, current: e.target.value})}
-                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg"
+                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm"
                             required
                             autoComplete="current-password"
                             aria-label="Current Password"
@@ -558,7 +544,7 @@ const handleProfileUpdate = async (e) => {
                       </div>
 
                       <div className="mb-4">
-                        <label className="flex text-base font-semibold text-gray-700 mb-1 items-center">
+                        <label className="flex text-sm font-semibold text-gray-700 mb-1 items-center">
                           New Password
                         </label>
                         <div className="relative">
@@ -566,7 +552,7 @@ const handleProfileUpdate = async (e) => {
                             type={showPassword.new ? "text" : "password"}
                             value={passwordForm.new}
                             onChange={(e) => setPasswordForm({...passwordForm, new: e.target.value})}
-                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg"
+                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm"
                             required
                             autoComplete="new-password"
                             aria-label="New Password"
@@ -582,7 +568,7 @@ const handleProfileUpdate = async (e) => {
                       </div>
 
                       <div className="mb-6">
-                        <label className="text-base font-semibold text-gray-700 mb-1 flex items-center">
+                        <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
                           Confirm New Password
                         </label>
                         <div className="relative">
@@ -590,7 +576,7 @@ const handleProfileUpdate = async (e) => {
                             type={showPassword.confirm ? "text" : "password"}
                             value={passwordForm.confirm}
                             onChange={(e) => setPasswordForm({...passwordForm, confirm: e.target.value})}
-                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-base sm:text-lg"
+                            className="text-[#323a45] w-full px-3 py-2 border border-[#3f6184] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#5faeb6] text-sm"
                             required
                             autoComplete="new-password"
                             aria-label="Confirm New Password"
@@ -612,13 +598,13 @@ const handleProfileUpdate = async (e) => {
                             setShowPasswordModal(false);
                             setPasswordForm({ current: '', new: '', confirm: '' });
                           }}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-[#323a45] hover:bg-gray-50 transition text-base"
+                          className="px-4 py-2 border border-gray-300 rounded-md text-[#323a45] hover:bg-gray-50 transition text-sm"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 bg-[#5faeb6] text-white rounded-md hover:bg-[#3f6184] transition text-base"
+                          className="px-4 py-2 bg-[#5faeb6] text-white rounded-md hover:bg-[#3f6184] transition text-sm"
                         >
                           Update Password
                         </button>

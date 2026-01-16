@@ -1,6 +1,5 @@
 const Task = require('../models/Task');
 
-// Get all tasks for logged-in user
 exports.getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.user._id }).sort({ createdAt: -1 });
@@ -10,7 +9,6 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-// Create a new task
 exports.createTask = async (req, res) => {
   const {
     title,
@@ -43,7 +41,6 @@ exports.createTask = async (req, res) => {
 };
 
 
-// Update a task
 exports.updateTask = async (req, res) => {
   try {
     const update = {};
@@ -65,7 +62,6 @@ exports.updateTask = async (req, res) => {
 };
 
 
-// Toggle important
 exports.toggleImportant = async (req, res) => {
   try {
     const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
@@ -81,7 +77,6 @@ exports.toggleImportant = async (req, res) => {
 };
 
 
-// Delete a task
 exports.deleteTask = async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.user._id });
